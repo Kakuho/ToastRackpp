@@ -60,6 +60,9 @@ class TapLoader : public BaseLoader{
 
   private:
   char* m_currentChunk;
+  void virtual CheckFileName() const override{
+
+  }
 };
 
 } // namespace trpp
