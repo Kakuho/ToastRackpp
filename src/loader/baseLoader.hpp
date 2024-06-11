@@ -53,12 +53,17 @@ class BaseLoader{
 
   protected:
     void virtual CheckFileName() const = 0;
-    std::size_t GetIndex() const{ return m_index;}
-    std::size_t SetIndex(std::size_t val) const{ return m_index; }
+    // cursor operations
+    std::size_t GetIndex() const noexcept{ return m_index;}
+    void SetIndex(std::size_t val) noexcept{ m_index = val; }
+    // memory operations
     std::uint8_t ReadByte(std::size_t index) const { return bytes[index];}
     std::uint16_t ReadWord(std::size_t index) const { 
-      return (static_cast<std::uint16_t>(static_cast<std::uint8_t>(bytes[index+1])) << 8) | 
-        static_cast<std::uint8_t>(bytes[index]);
+      return (
+          static_cast<std::uint16_t>(
+            static_cast<std::uint8_t>(bytes[index+1])) << 8) | 
+            static_cast<std::uint8_t>(bytes[index]
+          );
     }
     std::vector<char> bytes;
     std::size_t m_index;

@@ -2,6 +2,7 @@
 #include <bitset>
 #include "./../loader/taploader.hpp"
 #include "./../loader/z80loader.hpp"
+#include "./../48k/memory/48kmemory.hpp"
 
 namespace integ{
   inline void testTapLoader(){

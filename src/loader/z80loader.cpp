@@ -2,7 +2,7 @@
 
 namespace trpp{
 
-  using header_type = Z80Loader::Z80FileHeader;
+  using header_type = Z80FileHeader;
 
   Z80Loader::Z80Loader(std::string&& filename): 
     BaseLoader(std::move(filename)),
