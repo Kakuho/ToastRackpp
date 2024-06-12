@@ -56,7 +56,6 @@ struct Z80FileHeader{
   std::uint8_t joystick_synch_ifreq_emulation_imode;
 };
 
-
 // this is the state which the .z80 file encodes
 struct Z80StateSnapshot{
   // first set of regs
