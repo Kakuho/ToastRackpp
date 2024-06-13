@@ -8,6 +8,6 @@ namespace dism{
   //  FD‑prefixed opcodes
   //  DDCB/FDCB‑prefixed opcodes
   class driver{
-    
+
   };
 }

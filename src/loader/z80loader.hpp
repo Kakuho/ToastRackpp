@@ -13,6 +13,7 @@
 
 #include "baseLoader.hpp"
 #include "z80structs.hpp"
+#include "48k/memory48k.hpp"
 
 namespace trpp{
 
@@ -122,7 +123,7 @@ class Z80Loader : public BaseLoader{
               << std::setw(2) << std::setfill('0') << std::bitset<8>(header.r).to_ulong() << '\n';
   }
 
-  inline std::vector<std::uint8_t> EasyDump() const{
+  void EasyDump48k() const{
     // procedure to dump the entire memory - this is only if uncompressed and easy!
   }
 

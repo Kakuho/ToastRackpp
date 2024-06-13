@@ -6,5 +6,5 @@
 
 int main(){
   integ::testZ80Loader();
-  integ::testZ80LoaderMachineModelTetris();
+  integ::testLoaderTetris();
 }

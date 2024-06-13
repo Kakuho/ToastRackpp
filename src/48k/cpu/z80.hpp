@@ -38,6 +38,8 @@ class Z80{
   void Decode();
   void Execute();
 
+  // instructions - it would be better if we had a instruction table
+
   protected:
   Instruction m_instruction;
 
