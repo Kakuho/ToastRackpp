@@ -60,6 +60,10 @@ namespace integ{
       std::string m_name;
   };
 
+inline void PrintSeparator(){
+  std::cout << "\n----------\n";
+}
+
 }; // namespace integ
 
 #endif

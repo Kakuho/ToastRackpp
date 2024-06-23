@@ -1,7 +1,7 @@
 #ifndef Z80STRUCTS_HPP
 #define Z80STRUCTS_HPP
 
-// convenient classes for .z80 file loading
+// convenient sructs for .z80 file loading
 
 #include <string>
 #include <cstdint>
@@ -14,7 +14,7 @@
 
 namespace trpp{
 
-// these two enums are for system state
+// these two enums are for system state - probably should be moved within system
 enum class BorderColor : std::uint8_t{
   black = 0,
   blue = 1,
@@ -32,7 +32,8 @@ enum class InterruptMode{
   Mode3
 };
 
-// used to capture the header of z80 files
+// structs used to capture / store header of z80 files
+
 struct Z80FileHeader{
   std::uint8_t regA;
   std::uint8_t regF;
@@ -56,7 +57,35 @@ struct Z80FileHeader{
   std::uint8_t joystick_synch_ifreq_emulation_imode;
 };
 
-// this is the state which the .z80 file encodes
+struct Z80FileHeaderVersion2{
+  std::uint16_t length;
+  std::uint16_t pc;
+  std::uint8_t hwmode;
+  std::uint8_t samram;
+  std::uint8_t byte36;
+  std::uint8_t remu_ldiremu_aysound_audioboxemu_hwmodified;
+  std::uint8_t lastsoundchipout;
+  std::uint8_t soundchipdata[16];
+};
+
+struct Z80FileHeaderVersion3{
+  std::uint16_t lowTStateCounter;
+  std::uint8_t hiTStateCounter;
+  std::uint8_t SpectatorFlagByte;
+  std::uint8_t MGTRomPaged;
+  std::uint8_t MultifaceRomPaged;
+  std::uint8_t firstHalfRom;
+  std::uint8_t lastHalfRom;
+  std::uint16_t kbmapping[5];
+  std::uint16_t mappingAscii[5];
+  std::uint8_t MGTType;
+  std::uint8_t DiscipleInhibitButtonStatus;
+  std::uint8_t DiscipleInhibitFlag;
+  std::uint8_t last1ffd_out;
+};
+
+// this is the state which the .z80 file encodes - the "payload"
+// fields are laid out as in the file
 struct Z80StateSnapshot{
   // first set of regs
   std::uint8_t regA;

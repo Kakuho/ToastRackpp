@@ -1,9 +1,10 @@
 #include <iostream>
 #include <bitset>
+
 #include "ijob.hpp"
 #include "loader/taploader.hpp"
 #include "loader/z80loader.hpp"
-#include "48k/memory48k.hpp"
+#include "48k/zxmemory48k.hpp"
 
 namespace integ{
 
@@ -18,6 +19,7 @@ namespace integ{
     }
   };
 
+
   inline IJob testZ80Loader{"test .z80 loader", 
     [](){
       using namespace trpp;
@@ -25,6 +27,7 @@ namespace integ{
       zl.PrintRawBytes(35);
       zl.PrintHeader();
       std::cout << std::bitset<8>(zl.ParseRefreshRegister()).to_ulong() << '\n';
+      zl.PrintSpectrumModel();
       std::cout << "ayo!" << '\n';
     }
   };
@@ -37,4 +40,6 @@ namespace integ{
       zl.PrintSpectrumModel();
     }
   };
+
+
 }

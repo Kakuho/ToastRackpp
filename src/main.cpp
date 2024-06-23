@@ -1,10 +1,16 @@
 #include <iostream>
 #include <cassert>
-#include "48k/cpu/z80.hpp"
-#include "48k/cpu/instruction.hpp"
+
+#include "cpu/z80.hpp"
+#include "cpu/instruction_db.hpp"
 #include "integration/loader.hpp"
+#include "integration/edinstruction.hpp"
+
 
 int main(){
   integ::testZ80Loader();
   integ::testLoaderTetris();
+  trpp::CycleEntry{10, trpp::TCycleBreakdown{10, 2, 3}};
+  integ::testEX_AF_AF2();
+  integ::testLD_dd_nn();
 }

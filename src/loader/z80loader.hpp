@@ -13,7 +13,7 @@
 
 #include "baseLoader.hpp"
 #include "z80structs.hpp"
-#include "48k/memory48k.hpp"
+#include "48k/zxmemory48k.hpp"
 
 namespace trpp{
 

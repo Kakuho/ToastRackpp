@@ -6,7 +6,7 @@ include_directories(src)
 
 add_executable(toastrack
                src/main.cpp 
-               src/48k/cpu/instruction.cpp src/48k/cpu/z80.cpp
+               src/cpu/z80.cpp src/cpu/z80registers.cpp 
                src/loader/baseLoader.cpp src/loader/z80loader.cpp src/loader/taploader.cpp
               )
 
