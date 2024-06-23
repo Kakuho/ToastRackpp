@@ -7,12 +7,6 @@
 
 namespace trpp{
 
-class DebugZ80;
-
-}
-
-namespace trpp{
-
 class CpuLogger{
   public:
 
@@ -24,6 +18,10 @@ class CpuLogger{
     enum class Verbosity{
       verbose,
       instructionLevel
+    };
+
+    enum class Position{
+      Start, end
     };
 
     void StartInstruction(Z80Registers& registers, NoPrefix code){

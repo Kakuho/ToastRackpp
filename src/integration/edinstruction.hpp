@@ -18,7 +18,7 @@ inline IJob testLD_dd_nn{"test LD_dd_nn",
       using namespace trpp;
       DebugZ80 cpu{};
       cpu.SetA1(0x45);
-      cpu.LD_dd_nn(0b11, 0xf0, 0xab);
+      cpu.LD_dd_nn(0b01, 0xf0, 0xab);
     }
 };
 

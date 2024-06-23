@@ -32,6 +32,16 @@ struct Z80Registers{
     Z80RegisterPair de2;
     Z80RegisterPair hl2;
 
+    // special purpose registers
+    Z80RegisterPair ir;
+    std::uint16_t ix;
+    std::uint16_t iy;
+    std::uint16_t sp;
+    std::uint16_t pc;
+
+    std::uint8_t& i = ir.high;
+    std::uint8_t& r = ir.low;
+
     // first set of 8 bit individual registers
     std::uint8_t& a1 = af1.high;
     std::uint8_t& f1 = af1.low;
@@ -52,12 +62,7 @@ struct Z80Registers{
     std::uint8_t& h2 = hl2.high; 
     std::uint8_t& l2 = hl2.low; 
 
-    // special purpose registers
-    std::uint16_t ir; // I+R register
-    std::uint16_t ix;
-    std::uint16_t iy;
-    std::uint16_t sp;
-    std::uint16_t pc;
+
 };
 
 struct Z80State{
