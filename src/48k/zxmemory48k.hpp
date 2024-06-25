@@ -27,7 +27,7 @@ class ZxMemory48K final: public ZxMemory{
     }
 
     virtual std::uint8_t& operator[](std::uint16_t addr) noexcept override{
-      return (*this)[addr];
+      return m_buffer[addr];
     }
 
     virtual std::uint16_t ReadWord(std::uint16_t addr) const noexcept override{

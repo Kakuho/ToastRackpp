@@ -1,5 +1,5 @@
 #include "ijob.hpp"
-#include "cpu/z80.hpp"
+#include "cpu/debugz80.hpp"
 #include "iostream"
 
 namespace integ{
