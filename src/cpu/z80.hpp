@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <iostream>
 #include <stdexcept>
+#include <type_traits>
 
 #include "z80registers.hpp"
 #include "cpulogger.hpp"
@@ -64,6 +65,19 @@ class Z80{
       f1, f2
     };
 
+    // helper functions
+    template<typename T>
+      requires std::integral<T>
+    constexpr bool IsEvenParity(T val){
+      std::uint8_t count = 0;
+      for(int i = 0; i < sizeof(T) * 8; i++){
+        if((val & (1 << i)) == 1){
+          count++;
+        }
+      }
+      return count % 2 == 0 ? true : false;
+    }
+
     std::uint8_t& GetFlagRegister(FlagRegister& f);
     void SetCarry(FlagRegister num);
     void SetAddSubtract(FlagRegister num);
@@ -85,7 +99,6 @@ class Z80{
     // NO PREFIX - 8-bit Loads
     //---------------------------------------------------------------//
 
-    void NOP(){}
     void LD_r_r(std::uint8_t r, std::uint8_t rp);
     void LD_r_n(std::uint8_t r, std::uint8_t n);
     void LD_r_hl(std::uint8_t r);
@@ -120,6 +133,37 @@ class Z80{
     void EX_de_hl();
     void EX_AF_AF2();
     void EXX();
+    void EX_sp_hl();
+
+    //---------------------------------------------------------------//
+    // NO PREFIX - General-Purpose Arithmetic and CPU Control Group
+    //---------------------------------------------------------------//
+
+    // void DAA() // BCD arithemtic adjustment for the accumulator
+    void CPL();
+    void CCF();
+    void SCF();
+    void NOP();
+    //void HALT(); // requires implementing the tick cycle
+    void DI();
+    void EI();
+
+    //---------------------------------------------------------------//
+    // Rotate and Shift Group functions
+    //---------------------------------------------------------------//
+
+    // looks much easier to keep track of this way, probably 
+    // should refactor
+
+    void RLCA();
+    void RLA();
+    void RRCA();
+    void RRA();
+    void RLC_r(std::uint8_t r);
+    void RLC_hl();
+    void RLC_ixd(std::uint8_t d);
+    void RLC_iyd(std::uint8_t d); 
+
 
     //---------------------------------------------------------------//
     // ED PREFIX - 16-bit Loads
@@ -127,6 +171,28 @@ class Z80{
 
     void LD_dd_nn(std::uint8_t dd, std::uint16_t nn);
     void LD_nn_dd(std::uint8_t dd, std::uint16_t nn);
+
+    //---------------------------------------------------------------//
+    // ED PREFIX - Exchange, Blkt, Search
+    //---------------------------------------------------------------//
+
+    void LDI();
+    void LDIR();
+    void LDD();
+    void LDDR();
+    //void CPI();  // i need to figure out how to implement half borrowing here 
+    //void CPIR(); // i need to figure out how to implement half borrowing here 
+    //void CPD();  // i need to figure out how to implement half borrowing here   
+    //void CPDR(); // half borrow 
+
+    //---------------------------------------------------------------//
+    // ED PREFIX - General-Purpose Arithmetic and CPU Control Group
+    //---------------------------------------------------------------//
+
+    //void NEG();  // borrow from bit 4
+    void IM0();
+    void IM1();
+    void IM2();
 
     //---------------------------------------------------------------//
     // DD PREFIX - 8-bit Loads
@@ -148,6 +214,12 @@ class Z80{
     void Pop_ix();
 
     //---------------------------------------------------------------//
+    // DD PREFIX - Exchange, Blkt, Search
+    //---------------------------------------------------------------//
+
+    void EX_sp_ix();
+
+    //---------------------------------------------------------------//
     // FD PREFIX - 8-bit Loads
     //---------------------------------------------------------------//
 
@@ -165,6 +237,13 @@ class Z80{
     void LD_sp_iy();
     void Push_iy();
     void Pop_iy();
+
+    //---------------------------------------------------------------//
+    // FD PREFIX - Exchange, Blkt, Search
+    //---------------------------------------------------------------//
+
+    void EX_sp_iy();
+
 };
 
 } // namespace trpp

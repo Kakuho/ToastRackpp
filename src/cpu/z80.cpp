@@ -305,6 +305,197 @@ void Z80::EXX(){
   m_regs.de2 = tmpde1;
   m_regs.hl2 = tmphl1;
 }
+    
+void Z80::EX_sp_hl(){
+  // H <-> (SP+1), L <->(SP)
+  // temporary buffers
+  std::uint8_t sp = (*(m_memory))[m_regs.sp];
+  std::uint8_t spnext = (*(m_memory))[m_regs.sp+1];
+  std::uint8_t h = m_regs.h1;
+  std::uint8_t l = m_regs.l1;
+  // now the swapping occurs
+  m_regs.h1 = spnext;
+  (*(m_memory))[m_regs.sp+1] = h;
+  m_regs.l1 = sp;
+  (*(m_memory))[m_regs.sp] = l;
+
+}
+
+
+//---------------------------------------------------------------//
+// NO PREFIX - General-Purpose Arithmetic and CPU Control Group
+//---------------------------------------------------------------//
+
+void Z80::CPL(){
+  // A <-- A'
+  m_regs.a1 = ~m_regs.a1;
+  SetHalfCarry(FlagRegister::f1);
+  SetAddSubtract(FlagRegister::f1);
+}
+
+void Z80::CCF(){
+  // carry is inverted
+  bool prevCarry = m_regs.f1 & Flags::Carry;
+  prevCarry ? SetHalfCarry(FlagRegister::f1) : ClearHalfCarry(FlagRegister::f1);
+  ClearAddSubtract(FlagRegister::f1);
+  m_regs.f1 & Flags::Carry ? ClearCarry(FlagRegister::f1) : SetCarry(FlagRegister::f1);
+}
+
+void Z80::SCF(){
+  // Carry is set
+  ClearHalfCarry(FlagRegister::f1);
+  ClearAddSubtract(FlagRegister::f1);
+  SetCarry(FlagRegister::f1);
+}
+
+void Z80::NOP(){
+  // does nothing!
+}
+
+void Z80::DI(){
+  // IFF <-- 0
+  m_iff1 = false;
+  m_iff2 = false;
+}
+
+void Z80::EI(){
+  // IFF <-- 1
+  m_iff1 = true;
+  m_iff2 = true;
+}
+
+//---------------------------------------------------------------//
+// NO PREFIX - Roate and Shift Group
+//---------------------------------------------------------------//
+
+void Z80::RLCA(){
+ // The contents of the Accumulator (Register A) are rotated left 1 bit position. The sign bit
+ // (bit 7) is copied to the Carry flag and also to bit 0.
+  std::uint16_t current = m_regs.a1;
+  current <<= 1;
+  bool bit8 = current & 0x100;
+  current |= bit8;
+  m_regs.a1 = current & 0xFF;
+  // conditions
+  ClearHalfCarry(FlagRegister::f1);
+  ClearAddSubtract(FlagRegister::f1);
+  bit8 ? SetCarry(FlagRegister::f1) : ClearCarry(FlagRegister::f1);
+
+}
+
+void Z80::RLA(){
+  // The contents of the Accumulator (Register A) are rotated left 1 bit position through the
+  // Carry flag. The previous contents of the Carry flag are copied to bit 0
+  std::uint16_t current = m_regs.a1 | (m_regs.f1 & Flags::Carry << 8);
+  current <<= 1;
+  bool bit9 = current & 0x200;
+  current |= bit9;
+  m_regs.a1 = current & 0xFF;
+  // conditions
+  ClearHalfCarry(FlagRegister::f1);
+  ClearAddSubtract(FlagRegister::f1);
+  current & 0x200 ? SetCarry(FlagRegister::f1) : ClearCarry(FlagRegister::f1);
+}
+
+void Z80::RRCA(){
+  // The contents of the Accumulator (Register A) are rotated right 1 bit position. Bit 0 is 
+  // copied to the Carry flag and also to bit 7.
+  bool bit0 = m_regs.a1 & 1;
+  m_regs.a1 >>= 1;
+  m_regs.a1 |= (bit0 << 7);
+  // conditions
+  ClearHalfCarry(FlagRegister::f1);
+  ClearAddSubtract(FlagRegister::f1);
+  bit0 ? SetCarry(FlagRegister::f1) : ClearCarry(FlagRegister::f1);
+}
+
+void Z80::RRA(){
+  // The contents of the Accumulator (Register A) are rotated right 1 bit position through the
+  // Carry flag. The previous contents of the Carry flag are copied to bit 7.
+  bool abit0 = m_regs.a1 & 1;
+  bool carry = m_regs.f1 & Flags::Carry;
+  m_regs.a1 >>= 1;
+  m_regs.a1 |= (carry << 7);
+  // conditions
+  ClearHalfCarry(FlagRegister::f1);
+  ClearAddSubtract(FlagRegister::f1);
+  abit0 ? SetCarry(FlagRegister::f1) : ClearCarry(FlagRegister::f1);
+}
+
+void Z80::RLC_r(std::uint8_t r){
+  // The contents of register r are rotated left 1 bit position. The sign bit
+  // (bit 7) is copied to the Carry flag and also to bit 0.
+  std::uint8_t& reg = registerTable(r);
+  std::uint16_t current = reg;
+  current <<= 1;
+  bool bit8 = current & 0x100;
+  current |= bit8;
+  reg = current & 0xFF;
+  // conditions
+  current < 0 ? SetSign(FlagRegister::f1) : ClearSign(FlagRegister::f1);
+  current == 0 ? SetZero(FlagRegister::f1) : ClearZero(FlagRegister::f1);
+  ClearHalfCarry(FlagRegister::f1);
+  IsEvenParity(current) ? SetParityOverflow(FlagRegister::f1) : ClearParityOverflow(FlagRegister::f1);
+  ClearAddSubtract(FlagRegister::f1);
+  bit8 ? SetCarry(FlagRegister::f1) : ClearCarry(FlagRegister::f1);
+}
+
+void Z80::RLC_hl(){
+  // The contents of address hl are rotated left 1 bit position. The sign bit
+  // (bit 7) is copied to the Carry flag and also to bit 0.
+  std::uint8_t& mem = (*(m_memory))[m_regs.hl1];
+  std::uint16_t current = mem;
+  current <<= 1;
+  bool bit8 = current & 0x100;
+  current |= bit8;
+  mem = current & 0xFF;
+  // conditions
+  current < 0 ? SetSign(FlagRegister::f1) : ClearSign(FlagRegister::f1);
+  current == 0 ? SetZero(FlagRegister::f1) : ClearZero(FlagRegister::f1);
+  ClearHalfCarry(FlagRegister::f1);
+  IsEvenParity(current) ? SetParityOverflow(FlagRegister::f1) : ClearParityOverflow(FlagRegister::f1);
+  ClearAddSubtract(FlagRegister::f1);
+  bit8 ? SetCarry(FlagRegister::f1) : ClearCarry(FlagRegister::f1);
+
+}
+
+// so much of rlc instructions are repeated... probably should refactor
+
+void Z80::RLC_ixd(std::uint8_t d){
+  // The contents of memory address ix+d are rotated left 1 bit position. The sign bit
+  // (bit 7) is copied to the Carry flag and also to bit 0.
+  std::uint8_t& mem = (*(m_memory))[m_regs.ix + d];
+  std::uint16_t current = mem;
+  current <<= 1;
+  bool bit8 = current & 0x100;
+  current |= bit8;
+  mem = current & 0xFF;
+  // conditions
+  current < 0 ? SetSign(FlagRegister::f1) : ClearSign(FlagRegister::f1);
+  current == 0 ? SetZero(FlagRegister::f1) : ClearZero(FlagRegister::f1);
+  ClearHalfCarry(FlagRegister::f1);
+  IsEvenParity(current) ? SetParityOverflow(FlagRegister::f1) : ClearParityOverflow(FlagRegister::f1);
+  ClearAddSubtract(FlagRegister::f1);
+  bit8 ? SetCarry(FlagRegister::f1) : ClearCarry(FlagRegister::f1);
+}
+
+void Z80::RLC_iyd(std::uint8_t d){
+  // The contents of memory address iy+d are rotated left 1 bit position. The sign bit
+  // (bit 7) is copied to the Carry flag and also to bit 0.
+  std::uint8_t& mem = (*(m_memory))[m_regs.iy + d];
+  std::uint16_t current = mem;
+  current <<= 1;
+  bool bit8 = current & 0x100;
+  current |= bit8;
+  mem = current & 0xFF;
+  // conditions
+  current < 0 ? SetSign(FlagRegister::f1) : ClearSign(FlagRegister::f1);
+  current == 0 ? SetZero(FlagRegister::f1) : ClearZero(FlagRegister::f1);
+  ClearHalfCarry(FlagRegister::f1);
+  IsEvenParity(current) ? SetParityOverflow(FlagRegister::f1) : ClearParityOverflow(FlagRegister::f1);
+  ClearAddSubtract(FlagRegister::f1);
+  bit8 ? SetCarry(FlagRegister::f1) : ClearCarry(FlagRegister::f1);
+}
 
 //---------------------------------------------------------------//
 // ED PREFIX - 16-bit Loads
@@ -320,6 +511,110 @@ void Z80::LD_nn_dd(std::uint8_t nn, std::uint16_t dd){
   Z80RegisterPair& rr = registerPairSPTable(dd);
   (*(m_memory))[nn] = rr.low;
   (*(m_memory))[nn+1] = rr.high;
+}
+
+//---------------------------------------------------------------//
+// ED PREFIX - Exchange, Blkt, Search
+//---------------------------------------------------------------//
+
+void Z80::LDI(){
+  //(DE) <- (HL), DE <- DE + 1, HL <- HL + 1, BC <- BC – 1
+
+  std::uint16_t current_bc = m_regs.bc1;  // kept for testing pv flag
+  // actual work
+  (*(m_memory))[m_regs.de1] = (*(m_memory))[m_regs.hl1];
+  m_regs.de1 = m_regs.de1 + 1;
+  m_regs.hl1 = m_regs.hl1 + 1;
+  m_regs.bc1 = m_regs.bc1 - 1;
+  // now conditions!
+  ClearHalfCarry(FlagRegister::f1);
+  ClearAddSubtract(FlagRegister::f1);
+  current_bc -1 != 0 ? SetParityOverflow(FlagRegister::f1) : 
+    ClearParityOverflow(FlagRegister::f1);
+
+}
+
+void Z80::LDIR(){
+  // repeat {(DE) <- (HL), DE <- DE + 1, HL <- HL + 1, BC <- BC – 1} while (BC ≠ 0)
+  std::uint16_t current_bc = m_regs.bc1;  // kept for testing pv flag
+  // actual work
+  if(m_regs.bc1 != 0){
+    (*(m_memory))[m_regs.de1] = (*(m_memory))[m_regs.hl1];
+    m_regs.de1 = m_regs.de1 + 1;
+    m_regs.hl1 = m_regs.hl1 + 1;
+    m_regs.pc = m_regs.pc - 2;
+    // conditions
+    ClearHalfCarry(FlagRegister::f1);
+    ClearAddSubtract(FlagRegister::f1);
+    current_bc -1 != 0 ? SetParityOverflow(FlagRegister::f1) : 
+      ClearParityOverflow(FlagRegister::f1);
+  }
+  else{ return; }
+}
+
+void Z80::LDD(){
+  // (DE) <- (HL), DE <- DE – 1, HL <- HL– 1, BC <- BC– 1
+  std::uint16_t current_bc = m_regs.bc1;  // kept for testing pv flag
+  // actual work
+  (*(m_memory))[m_regs.de1] = (*(m_memory))[m_regs.hl1];
+  m_regs.de1 = m_regs.de1 - 1;
+  m_regs.hl1 = m_regs.hl1 - 1;
+  m_regs.bc1 = m_regs.bc1 - 1;
+  // now conditions
+  ClearHalfCarry(FlagRegister::f1);
+  ClearAddSubtract(FlagRegister::f1);
+  current_bc -1 != 0 ? SetParityOverflow(FlagRegister::f1) : 
+    ClearParityOverflow(FlagRegister::f1);
+}
+
+void Z80::LDDR(){
+  // (DE) <- (HL), DE <- DE – 1, HL <- HL– 1, BC <- BC– 1, PC-=2
+  if(m_regs.bc1 != 0){
+    LDD();
+  }
+  else{ return ;}
+}
+
+/*
+void Z80::CPI(){
+  // A – (HL), HL ← HL +1, BC ← BC – 1
+  // testing for borrow:
+}
+*/
+
+//---------------------------------------------------------------//
+// ED PREFIX - General-Purpose Arithmetic and CPU Control Group
+//---------------------------------------------------------------//
+
+/*
+void Z80::NEG(){
+  std::uint8_t before = m_regs.a1;
+  std::uint8_t after = -m_regs.a1;
+  m_regs.a1 = after;
+  // statuses
+  after & 0x80 ? SetSign(FlagRegister::f1) : ClearSign(FlagRegister::f1);
+  after == 0 ? SetZero(FlagRegister::f1) : ClearZero(FlagRegister::f1);
+  // BORROW!
+  before == 0x80 ? SetParityOverflow(FlagRegister::f1) : ClearParityOverflow(FlagRegister::f1);
+  SetAddSubtract(FlagRegister::f1);
+  before != 0 ? SetCarry(FlagRegister::f1) : ClearCarry(FlagRegister::f1);
+}
+*/
+
+void Z80::IM0(){
+  // sets to interrupt mode 0 
+  m_imode = InterruptMode::mode0;
+}
+
+void Z80::IM1(){
+  // sets to interrupt mode 1
+  m_imode = InterruptMode::mode1;
+
+}
+
+void Z80::IM2(){
+  // sets to interrupt mode 2
+  m_imode = InterruptMode::mode2;
 }
 
 //---------------------------------------------------------------//
@@ -378,6 +673,24 @@ void Z80::Pop_ix(){
   m_regs.ix.low = low;
 }
 
+//---------------------------------------------------------------//
+// DD PREFIX - Exchange, Blkt, Search
+//---------------------------------------------------------------//
+
+void Z80::EX_sp_ix(){
+  // ix.high <-> (SP+1), ix.low <->(SP)
+  // temporary buffers
+  std::uint8_t sp = (*(m_memory))[m_regs.sp];
+  std::uint8_t spnext = (*(m_memory))[m_regs.sp+1];
+  std::uint8_t ix_high = m_regs.ix.high;
+  std::uint8_t ix_low = m_regs.ix.low;
+  // now the swapping occurs
+  m_regs.ix.high = spnext;
+  (*(m_memory))[m_regs.sp+1] = ix_high;
+  m_regs.ix.low = sp;
+  (*(m_memory))[m_regs.sp] = ix_low;
+
+}
 
 //---------------------------------------------------------------//
 // FD PREFIX - 8-bit Loads
@@ -432,6 +745,24 @@ void Z80::Pop_iy(){
   std::uint8_t high = (*(m_memory))[m_regs.sp++];
   m_regs.iy.high =  high;
   m_regs.iy.low = low;
+}
+
+//---------------------------------------------------------------//
+// FD PREFIX - Exchange, Blkt, Search
+//---------------------------------------------------------------//
+
+void Z80::EX_sp_iy(){
+  // iy.high <-> (SP+1), iy.low <->(SP)
+  // temporary buffers
+  std::uint8_t sp = (*(m_memory))[m_regs.sp];
+  std::uint8_t spnext = (*(m_memory))[m_regs.sp+1];
+  std::uint8_t iy_high = m_regs.iy.high;
+  std::uint8_t iy_low = m_regs.iy.low;
+  // now the swapping occurs
+  m_regs.iy.high = spnext;
+  (*(m_memory))[m_regs.sp+1] = iy_high;
+  m_regs.iy.low = sp;
+  (*(m_memory))[m_regs.sp] = iy_low;
 }
 
 } // namespace trpp
