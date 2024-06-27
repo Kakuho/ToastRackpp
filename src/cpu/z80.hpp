@@ -49,6 +49,8 @@ class Z80{
 
     // stack functions
     void PushByte(std::uint8_t byte);
+    std::uint8_t StackPopByte();
+
 
   public:
     // flags status related
@@ -79,103 +81,94 @@ class Z80{
     }
 
     std::uint8_t& GetFlagRegister(FlagRegister& f);
+    // Sets
     void SetCarry(FlagRegister num);
     void SetAddSubtract(FlagRegister num);
     void SetParityOverflow(FlagRegister num);
     void SetHalfCarry(FlagRegister num);
     void SetZero(FlagRegister num);
     void SetSign(FlagRegister num);
+    // Clears
     void ClearCarry(FlagRegister num);
     void ClearAddSubtract(FlagRegister num);
     void ClearParityOverflow(FlagRegister num);
     void ClearHalfCarry(FlagRegister num);
     void ClearZero(FlagRegister num);
     void ClearSign(FlagRegister num);
+    // Gets
+    bool GetCarry()           {return m_regs.f1 & Flags::Carry;}
+    bool GetAddSubtract()     {return m_regs.f1 & Flags::AddSubtract;}
+    bool GetParityOverflow()  {return m_regs.f1 & Flags::ParityOverflow;}
+    bool GetHalfCarry()       {return m_regs.f1 & Flags::HalfCarry;}
+    bool GetZero()            {return m_regs.f1 & Flags::Zero;}
+    bool GetSign()            {return m_regs.f1 & Flags::Sign;}
 
   public:
     //---------------------------------------------------------------//
     // INSTRUCTIONS
+    // (organised by instruction groups and page, prefix is at the end)
     //---------------------------------------------------------------//
-    // NO PREFIX - 8-bit Loads
-    //---------------------------------------------------------------//
-
-    void LD_r_r(std::uint8_t r, std::uint8_t rp);
-    void LD_r_n(std::uint8_t r, std::uint8_t n);
-    void LD_r_hl(std::uint8_t r);
-    void LD_hl_r(std::uint8_t r);
-    void LD_hl_n(std::uint8_t n);
-    void LD_a_bc();
-    void LD_a_de();
-    void LD_a_nn(std::uint16_t nn);
-    void LD_bc_a();
-    void LD_de_a();
-    void LD_nn_a(std::uint8_t n1, std::uint8_t n2);
-    void LD_a_i();
-    void LD_a_r();
-    void LD_i_a();
-    void LD_r_a();
-
-    //---------------------------------------------------------------//
-    // NO PREFIX - 16-bit Loads
+    // 8-bit Loads Group
     //---------------------------------------------------------------//
 
-    void LD_dd_nn(std::uint8_t dd, std::uint8_t n1, std::uint8_t n2);
-    void LD_hl_nn(std::uint8_t n1, std::uint8_t n2);
-    void LD_nn_hl(std::uint16_t nn);
+    void LD_r_r(std::uint8_t r, std::uint8_t rp);   
+    void LD_r_n(std::uint8_t r, std::uint8_t n);    
+    void LD_r_hl(std::uint8_t r);                   
+    void LD_r_ixd(std::uint8_t r, std::uint8_t d);  // DD
+    void LD_r_iyd(std::uint8_t r, std::uint8_t d);  // FD
+    void LD_hl_r(std::uint8_t r);                   
+    void LD_ixd_r(std::uint8_t d, std::uint8_t r);  // DD
+    void LD_iyd_r(std::uint8_t d, std::uint8_t r);  // FD
+    void LD_hl_n(std::uint8_t n);                   
+    void LD_ixd_n(std::uint8_t d, std::uint8_t n);  // DD
+    void LD_iyd_n(std::uint8_t d, std::uint8_t n);  // FD
+    void LD_a_bc();                                 
+    void LD_a_de();                                 
+    void LD_a_nn(std::uint16_t nn);                 
+    void LD_bc_a();                                 
+    void LD_de_a();                                 
+    void LD_nn_a(std::uint8_t n1, std::uint8_t n2); 
+    void LD_a_i();                                  // ED
+    void LD_a_r();                                  // ED
+    void LD_i_a();                                  // ED
+    void LD_r_a();                                  // ED
+
+    //---------------------------------------------------------------//
+    // 16-bit Loads Group
+    //---------------------------------------------------------------//
+
+    void LD_dd_nn(std::uint8_t dd, 
+        std::uint8_t n1, std::uint8_t n2);
+    void LD_ix_nn(std::uint8_t n1, std::uint8_t n2);  // DD
+    void LD_iy_nn(std::uint8_t n1, std::uint8_t n2);  // FD
+    void LD_hl_nn(std::uint8_t n1, std::uint8_t n2);  
+    void LD_dd_nn(std::uint8_t dd, std::uint16_t nn); // ED
+    void LD_ix_nn_indirect(std::uint16_t nn);         // DD
+    void LD_iy_nn_indirect(std::uint16_t nn);         // FD
+    void LD_nn_hl(std::uint16_t nn);                  
+    void LD_nn_dd(std::uint8_t dd, std::uint16_t nn); // ED
+    void LD_nn_ix(std::uint16_t nn);                  // DD
+    void LD_nn_iy(std::uint16_t nn);                  // FD
     void LD_sp_hl();
-    void Push_qq(std::uint8_t qq);
+    void LD_sp_ix();                                  // DD
+    void LD_sp_iy();                                  // FD
+    void Push_qq(std::uint8_t qq);                    
+    void Push_ix();                                   // DD
+    void Push_iy();                                   // FD
     void Pop_qq(std::uint8_t qq);
+    void Pop_ix();                                    // DD
+    void Pop_iy();                                    // FD
 
     //---------------------------------------------------------------//
-    // NO PREFIX - Exchange, Blkt, Search
+    // Exchange, Blkt, Search Group
     //---------------------------------------------------------------//
 
     void EX_de_hl();
     void EX_AF_AF2();
     void EXX();
     void EX_sp_hl();
-
-    //---------------------------------------------------------------//
-    // NO PREFIX - General-Purpose Arithmetic and CPU Control Group
-    //---------------------------------------------------------------//
-
-    // void DAA() // BCD arithemtic adjustment for the accumulator
-    void CPL();
-    void CCF();
-    void SCF();
-    void NOP();
-    //void HALT(); // requires implementing the tick cycle
-    void DI();
-    void EI();
-
-    //---------------------------------------------------------------//
-    // Rotate and Shift Group functions
-    //---------------------------------------------------------------//
-
-    // looks much easier to keep track of this way, probably 
-    // should refactor
-
-    void RLCA();
-    void RLA();
-    void RRCA();
-    void RRA();
-    void RLC_r(std::uint8_t r);
-    void RLC_hl();
-    void RLC_ixd(std::uint8_t d);
-    void RLC_iyd(std::uint8_t d); 
-
-
-    //---------------------------------------------------------------//
-    // ED PREFIX - 16-bit Loads
-    //---------------------------------------------------------------//
-
-    void LD_dd_nn(std::uint8_t dd, std::uint16_t nn);
-    void LD_nn_dd(std::uint8_t dd, std::uint16_t nn);
-
-    //---------------------------------------------------------------//
-    // ED PREFIX - Exchange, Blkt, Search
-    //---------------------------------------------------------------//
-
+    void EX_sp_ix();  // DD
+    void EX_sp_iy();  // FD
     void LDI();
     void LDIR();
     void LDD();
@@ -183,67 +176,111 @@ class Z80{
     //void CPI();  // i need to figure out how to implement half borrowing here 
     //void CPIR(); // i need to figure out how to implement half borrowing here 
     //void CPD();  // i need to figure out how to implement half borrowing here   
-    //void CPDR(); // half borrow 
+    //void CPDR(); // figure out how to implement half borrow 
 
     //---------------------------------------------------------------//
-    // ED PREFIX - General-Purpose Arithmetic and CPU Control Group
+    // General-Purpose Arithmetic and CPU Control Group
     //---------------------------------------------------------------//
 
-    //void NEG();  // borrow from bit 4
-    void IM0();
-    void IM1();
-    void IM2();
+    // void DAA() // BCD arithemtic adjustment for the accumulator
+    void CPL();
+    //void NEG();   // ED  // borrow from bit 4
+    void CCF();
+    void SCF();
+    void NOP();
+    //void HALT(); // requires implementing the tick cycle
+    void DI();
+    void EI();
+    void IM0();     // ED
+    void IM1();     // ED
+    void IM2();     // ED
 
     //---------------------------------------------------------------//
-    // DD PREFIX - 8-bit Loads
-    //---------------------------------------------------------------//
+    // Rotate and Shift Group functions
+    //---------------------------------------------------------------/
 
-    void LD_r_ixd(std::uint8_t r, std::uint8_t d);
-    void LD_ixd_r(std::uint8_t d, std::uint8_t r);
-    void LD_ixd_n(std::uint8_t d, std::uint8_t n);
+    void RLCA();
+    void RLA(); 
+    void RRCA();
+    void RRA();
+    void RLC_r(std::uint8_t r);     // CB
+    void RLC_hl();                  // CB
+    void RLC_ixd(std::uint8_t d);   // DDCB
+    void RLC_iyd(std::uint8_t d);   // FDCB
+    void RL_r(std::uint8_t r);      // CB
+    void RL_hl();                   // CB
+    void RL_ixd(std::uint8_t d);    // DDCB
+    void RL_iyd(std::uint8_t d);    // FDCB
+    void RRC_r(std::uint8_t r);     // CB
+    void RRC_hl();                  // CB
+    void RRC_ixd(std::uint8_t d);   // DDCB
+    void RRC_iyd(std::uint8_t d);   // FDCB
+    //
+    //void RLD();                   // ED // conditions need some working out
+    //void RRD();                   // ED // conditions need some working out
 
-    //---------------------------------------------------------------//
-    // DD PREFIX - 16-bit Loads
-    //---------------------------------------------------------------//
-
-    void LD_ix_nn(std::uint8_t n1, std::uint8_t n2);
-    void LD_ix_nn_indirect(std::uint16_t nn);
-    void LD_nn_ix(std::uint16_t nn);
-    void LD_sp_ix();
-    void Push_ix();
-    void Pop_ix();
-
-    //---------------------------------------------------------------//
-    // DD PREFIX - Exchange, Blkt, Search
-    //---------------------------------------------------------------//
-
-    void EX_sp_ix();
-
-    //---------------------------------------------------------------//
-    // FD PREFIX - 8-bit Loads
-    //---------------------------------------------------------------//
-
-    void LD_r_iyd(std::uint8_t r, std::uint8_t d);
-    void LD_iyd_r(std::uint8_t d, std::uint8_t r);
-    void LD_iyd_n(std::uint8_t d, std::uint8_t n);
-
-    //---------------------------------------------------------------//
-    // FD PREFIX - 16-bit Loads
-    //---------------------------------------------------------------//
-
-    void LD_iy_nn(std::uint8_t n1, std::uint8_t n2);
-    void LD_iy_nn_indirect(std::uint16_t nn);
-    void LD_nn_iy(std::uint16_t nn);
-    void LD_sp_iy();
-    void Push_iy();
-    void Pop_iy();
+    // helper functions for RL instructions
+    void DoRL(std::uint8_t& src);
+    void DoRRC(std::uint8_t& src);
+    void DoRR(std::uint8_t& src);
+    void DoSLA(std::uint8_t& src);
+    void DoSRA(std::uint8_t& src);
+    void DoSRL(std::uint8_t& src);
 
     //---------------------------------------------------------------//
-    // FD PREFIX - Exchange, Blkt, Search
+    // Bit Set, Reset, Test Group
+    //---------------------------------------------------------------/
+
+    // sanitary check
+    bool b_is_valid(std::uint8_t b){ return b <= 7 ? true : false; }
+    // a lot of these instructions have S and P/V unknown
+    void BIT_b_r(std::uint8_t b, std::uint8_t r);           // CB
+    void BIT_b_hl(std::uint8_t b);                          // CB
+    void BIT_b_ixd(std::uint8_t b, std::uint8_t d);         // DDCB
+    void BIT_b_iyd(std::uint8_t b, std::uint8_t d);         // FDCB
+    void SET_b_r(std::uint8_t b, std::uint8_t r);           // CB
+    void SET_b_hl(std::uint8_t b);                          // CB
+    void SET_b_ixd(std::uint8_t b, std::int8_t d);          // DDCB
+    void SET_b_iyd(std::uint8_t b, std::int8_t d);          // FDCB
+    void RES_b_r(std::uint8_t b, std::uint8_t r);           // CB
+    void RES_b_hl(std::uint8_t b);                          // CB
+    void RES_b_ixd(std::uint8_t b, std::int8_t d);          // DDCB
+    void RES_b_iyd(std::uint8_t b, std::int8_t d);          // FDCB
+                                                            
     //---------------------------------------------------------------//
+    // Jump Group
+    //---------------------------------------------------------------/
 
-    void EX_sp_iy();
+    bool cc_status(std::uint8_t cc);
+    void JP_nn(std::uint16_t nn);
+    void JP_cc_nn(std::uint8_t cc, std::uint16_t nn);
+    void JR_e(std::int8_t e);
+    void JR_c_e(std::int8_t e);
+    void JR_nc_e(std::int8_t e);
+    void JR_z_e(std::int8_t e);
+    void JR_nz_e(std::int8_t e);
+    void JP_hl();
+    void JP_ix();                 // DD
+    void JP_iy();                 // FD
+    void DJNZ_e(std::int8_t e);
 
+    //---------------------------------------------------------------//
+    // Call and Return Group
+    //---------------------------------------------------------------/
+
+    void CALL_nn(std::uint16_t nn);
+    void CALL_cc_nn(std::uint8_t cc, std::uint16_t nn);
+    void RET();
+    void RET_cc(std::uint8_t cc);
+    //void RETI(); // gotta know how interrupts behave to implement this
+    //void RETN(); // gotta know how interrupts behave to implement this
+    void RST(std::uint8_t t);
+
+    //---------------------------------------------------------------//
+    // Input Output Group
+    //---------------------------------------------------------------/
+    // requires implementing ports 
+    // how do we initialise ports ? idk
 };
 
 } // namespace trpp
