@@ -1,7 +1,7 @@
+
 #include <catch2/catch_test_macros.hpp>
 #include "cpu/debugz80.hpp"
 #include "cassert"
-
 
 TEST_CASE( "ld_r_r cases", "[ld_r_r]" ) {
   trpp::DebugZ80 cpu;

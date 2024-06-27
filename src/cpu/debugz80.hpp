@@ -73,13 +73,35 @@ class DebugZ80 final: public Z80{
     std::uint8_t GetF2(){return m_regs.f2;}
     void SetF2(std::uint8_t val){ m_regs.f2 = val; }
 
+    // special registers
+    std::uint16_t GetIR(){ return m_regs.ir;}
+    void SetIR(std::uint16_t val){ m_regs.ir = val;}
+
+    std::uint16_t GetIX(){ return m_regs.ix;}
+    void SetIX(std::uint16_t val){ m_regs.ix = val;}
+
+    std::uint16_t GetIY(){ return m_regs.iy;}
+    void SetIY(std::uint16_t val){ m_regs.iy = val;}
+
+    std::uint16_t GetSP(){ return m_regs.sp;}
+    void SetSP(std::uint16_t val){ m_regs.sp = val;}
+
+    std::uint16_t GetPC(){ return m_regs.pc;}
+    void SetPC(std::uint16_t val){ m_regs.pc = val;}
+
     // pairs of registers
     // first set
     std::uint16_t GetAF1(){ return m_regs.af1;}
+    void SetAF1(std::uint16_t val){ m_regs.af1 = val;}
+
     std::uint16_t GetBC1(){ return m_regs.bc1;}
+    void SetBC1(std::uint16_t val){ m_regs.bc1 = val;}
+
     std::uint16_t GetDE1(){ return m_regs.de1;}
+    void SetDE1(std::uint16_t val){ m_regs.de1 = val;}
+
     std::uint16_t GetHL1(){ return m_regs.hl1;}
-    std::uint16_t GetSP(){ return m_regs.sp;}
+    void SetHL1(std::uint16_t val){ m_regs.hl1 = val;}
 
     // second set
     std::uint16_t GetAF2(){ return m_regs.af2;}

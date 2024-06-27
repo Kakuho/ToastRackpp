@@ -27,7 +27,10 @@ add_custom_command(
 
 find_package(Catch2 3 REQUIRED)
 
-set(TEST_SRCS src/tests/cpu/ld_r_r.cpp src/tests/cpu/registerdecoding.cpp
+set(TEST_SRCS src/tests/cpu/8bitload/ld_r_r.cpp 
+              src/tests/cpu/8bitload/ld_r_n.cpp
+              src/tests/cpu/8bitload/ld_r_hl.cpp
+              src/tests/cpu/registerdecoding.cpp
               src/tests/cpu/general.cpp
    )
 
