@@ -15,7 +15,12 @@ namespace trpp{
 
 class ZxMemory48K final: public ZxMemory{
   public:
-    ZxMemory48K() = default;
+    ZxMemory48K(){
+      for(std::uint8_t& k : m_buffer){
+        k = 0x00;
+      }
+    };
+
     ~ZxMemory48K() = default;
 
   private:

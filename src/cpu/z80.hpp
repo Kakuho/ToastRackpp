@@ -9,6 +9,7 @@
 #include "z80registers.hpp"
 #include "cpulogger.hpp"
 #include "shared/zxmemory.hpp"
+#include "../utils.hpp"
 
 namespace trpp{
 
@@ -18,7 +19,20 @@ class Z80{
     virtual ~Z80() = default;
     void ConnectMemory(ZxMemory* memory){ m_memory = memory;}
 
+    // tables
+    std::array<int(Z80::*)(), 0xff> m_noprefixtable;
+
     // standard operational functions
+    // masks useful for decoding
+    static constexpr std::uint8_t maskX = 0b1100'0000;
+    static constexpr std::uint8_t maskY = 0b0011'1000;
+    static constexpr std::uint8_t maskZ = 0b0000'0111;
+    static constexpr std::uint8_t maskP = 0b0011'0000;
+    static constexpr std::uint8_t maskQ = 0b0000'1000;
+    void Tick();
+    void TickNoPrefix(std::uint8_t opcode);
+    std::uint8_t FetchNN();
+
     void Fetch();
     void Decode();
     void Execute();
@@ -36,10 +50,12 @@ class Z80{
     bool m_nmi;
     InterruptMode m_imode;
 
+  protected:
     // instruction operand tables:
     std::uint8_t& registerTable(std::uint8_t r);
     Z80RegisterPair& registerPairSPTable(std::uint8_t r); 
     Z80RegisterPair& registerPairAFTable(std::uint8_t r); 
+    bool registerParamOkay(std::uint8_t r){ return r < 7;}
 
   public:
     // memory addressing functions
@@ -114,7 +130,7 @@ class Z80{
     void LD_r_r(std::uint8_t r, std::uint8_t rp);   
     void LD_r_n(std::uint8_t r, std::uint8_t n);    
     void LD_r_hl(std::uint8_t r);                   
-    void LD_r_ixd(std::uint8_t r, std::uint8_t d);  // DD
+    void LD_r_ixd(std::uint8_t r, std::int8_t d);  // DD
     void LD_r_iyd(std::uint8_t r, std::uint8_t d);  // FD
     void LD_hl_r(std::uint8_t r);                   
     void LD_ixd_r(std::uint8_t d, std::uint8_t r);  // DD
@@ -128,8 +144,8 @@ class Z80{
     void LD_bc_a();                                 
     void LD_de_a();                                 
     void LD_nn_a(std::uint8_t n1, std::uint8_t n2); 
-    void LD_a_i();                                  // ED
-    void LD_a_r();                                  // ED
+    void LD_a_i();                                  // ED // Need Interrupt behaviour
+    void LD_a_r();                                  // ED // Need Interrupt behaviour
     void LD_i_a();                                  // ED
     void LD_r_a();                                  // ED
 
@@ -169,14 +185,82 @@ class Z80{
     void EX_sp_hl();
     void EX_sp_ix();  // DD
     void EX_sp_iy();  // FD
-    void LDI();
-    void LDIR();
-    void LDD();
-    void LDDR();
-    //void CPI();  // i need to figure out how to implement half borrowing here 
-    //void CPIR(); // i need to figure out how to implement half borrowing here 
-    //void CPD();  // i need to figure out how to implement half borrowing here   
-    //void CPDR(); // figure out how to implement half borrow 
+    void LDI();       // ED
+    void LDIR();      // ED
+    void LDD();       // ED
+    void LDDR();      // ED
+    void CPI();       // ED
+    void CPIR();      // ED // requires Interrupt behaviour
+    void CPD();       // ED
+    void CPDR();      // ED // requires Interrupt behaviour
+                      
+    //---------------------------------------------------------------//
+    // 8-bit Arithmetric Group
+    //---------------------------------------------------------------//
+
+    std::int8_t DoADD(const std::int8_t dest, const std::int8_t src);
+    void ADD_a_r(std::uint8_t r);
+    void ADD_a_n(std::int8_t n);
+    void ADD_a_hl();
+    void ADD_a_ixd(std::int8_t d);  // what if ix - d or ix + d overflows 64Kib?
+    void ADD_a_iyd(std::int8_t d);  // what if iy - d or iy + d overflows 64Kib?
+
+    // requires checking and testing! does CarryIn affects Overflow cond?
+    std::int8_t DoADC(const std::int8_t dest, const std::int8_t src, bool carryIn);
+    void ADC_a_r(std::uint8_t r);
+    void ADC_a_n(std::int8_t n);
+    void ADC_a_hl();
+    void ADC_a_ixd(std::int8_t d);  // what if ix - d or ix + d overflows 64Kib?
+    void ADC_a_iyd(std::int8_t d);  // what if iy - d or iy + d overflows 64Kib?
+
+                                    //
+    std::int8_t DoSUB(const std::int8_t dest, const std::int8_t src);
+    void SUB_a_r(std::uint8_t r);
+    void SUB_a_n(std::int8_t n);
+    void SUB_a_hl();
+    void SUB_a_ixd(std::int8_t d);  // what if ix - d or ix + d overflows 64Kib?
+    void SUB_a_iyd(std::int8_t d);  // what if iy - d or iy + d overflows 64Kib?#
+
+    /* Does Carryin Affect Overflow cond?
+    std::int8_t DoSBC(const std::int8_t dest, const std::int8_t src, bool carryIn);
+    void SBC_a_r(std::uint8_t r);
+    void SBC_a_n(std::int8_t n);
+    void SBC_a_hl();
+    void SBC_a_ixd(std::int8_t d);  // what if ix - d or ix + d overflows 64Kib?
+    void SBC_a_iyd(std::int8_t d);  // what if iy - d or iy + d overflows 64Kib?
+    */
+
+    /* When does an AND overflow?
+    std::int8_t DoAND(const std::uint8_t dest, const std::uint8_t src);
+    */
+
+    /* When does an OR overflow?
+    std::int8_t DoAND(const std::uint8_t dest, const std::uint8_t src);
+    */
+
+    std::int8_t DoXOR(const std::uint8_t dest, const std::uint8_t src);
+    void XOR_a_r(std::uint8_t r);
+    void XOR_a_n(std::int8_t n);
+    void XOR_a_hl();
+    void XOR_a_ixd(std::int8_t d);  // what if ix - d or ix + d overflows 64Kib?
+    void XOR_a_iyd(std::int8_t d);  // what if iy - d or iy + d overflows 64Kib?#
+
+    /* // is this gonna used two's complement or unsigned integers?
+    // std::int8_t DoCP(const std::int8_t src, const std::int8_t dest)
+    */
+
+    std::uint8_t DoINC(std::uint8_t src);
+    void INC_r(std::uint8_t r);
+    void INC_hl();
+    void INC_ixd(std::int8_t d);
+    void INC_iyd(std::int8_t d);
+
+    std::uint8_t DoDEC(std::uint8_t src);
+    void DEC_r(std::uint8_t r);
+    void DEC_hl();
+    void DEC_ixd(std::int8_t d);
+    void DEC_iyd(std::int8_t d);
+
 
     //---------------------------------------------------------------//
     // General-Purpose Arithmetic and CPU Control Group
@@ -184,7 +268,7 @@ class Z80{
 
     // void DAA() // BCD arithemtic adjustment for the accumulator
     void CPL();
-    //void NEG();   // ED  // borrow from bit 4
+    void NEG();   // ED 
     void CCF();
     void SCF();
     void NOP();
@@ -272,8 +356,8 @@ class Z80{
     void CALL_cc_nn(std::uint8_t cc, std::uint16_t nn);
     void RET();
     void RET_cc(std::uint8_t cc);
-    //void RETI(); // gotta know how interrupts behave to implement this
-    //void RETN(); // gotta know how interrupts behave to implement this
+    //void RETI(); // requires Interrupt behaviour
+    //void RETN(); // requires Interrupt behaviour
     void RST(std::uint8_t t);
 
     //---------------------------------------------------------------//

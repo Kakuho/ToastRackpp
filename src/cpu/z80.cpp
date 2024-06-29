@@ -13,9 +13,48 @@ Z80::Z80():
 
 }
 
+void Z80::Tick(){
+  // instruction stepped interpreter
+  std::uint8_t byte1 = (*(m_memory))[m_regs.pc];
+  switch(byte1){
+    case 0xED:
+      // is ED prefixed
+      break;
+    case 0xDD:
+      // is ED prefixed
+      break;
+    case 0xFD:
+      // is ED prefixed
+      break;
+    default:
+      std::uint8_t byte2 = (*(m_memory))[m_regs.pc + 1];
+      TickNoPrefix(byte2);
+  }
+}
+
+void Z80::TickNoPrefix(std::uint8_t opcode){
+  switch(opcode){
+    case 0x00:
+      NOP();
+      return;
+    case 0x01: {
+      auto nn = FetchNN();
+      LD_r_n(opcode & maskP, nn);
+      return;
+    }
+    case 0x02: {
+      break;
+    }
+    default:
+      break;
+  }
+}
+
 void Z80::Decode(){
 
 }
+
+//---------------------------------------------------------------//
 
 void Z80::PushByte(std::uint8_t byte){
   (*(m_memory))[--m_regs.sp] = byte;
@@ -177,13 +216,42 @@ void Z80::LD_r_hl(std::uint8_t r){
   dest = (*(m_memory))[m_regs.hl1];
 }
 
+void Z80::LD_r_ixd(std::uint8_t r, std::int8_t d){
+  // d is treated as 2's complemented displacement
+  std::uint8_t& dest = registerTable(r);
+  dest = (*(m_memory))[m_regs.ix + d];
+}
+
+void Z80::LD_r_iyd(std::uint8_t r, std::uint8_t d){
+  std::uint8_t& dest = registerTable(r);
+  dest = (*(m_memory))[m_regs.iy + d];
+}
+
 void Z80::LD_hl_r(std::uint8_t r){
   const std::uint8_t& src = registerTable(r);
   (*(m_memory))[m_regs.hl1] = src;
 }
 
+void Z80::LD_ixd_r(std::uint8_t d, std::uint8_t r){
+  const std::uint8_t& src = registerTable(r);
+  (*(m_memory))[m_regs.ix + d] = src;
+}
+
+void Z80::LD_iyd_r(std::uint8_t d, std::uint8_t r){
+  const std::uint8_t& src = registerTable(r);
+  (*(m_memory))[m_regs.iy + d] = src;
+}
+
 void Z80::LD_hl_n(std::uint8_t n){
   (*(m_memory))[m_regs.hl1] = n;
+}
+
+void Z80::LD_ixd_n(std::uint8_t d, std::uint8_t n){
+  (*(m_memory))[m_regs.ix + d] = n;
+}
+
+void Z80::LD_iyd_n(std::uint8_t d, std::uint8_t n){
+  (*(m_memory))[m_regs.iy + d] = n;
 }
 
 void Z80::LD_a_bc(){ 
@@ -239,40 +307,6 @@ void Z80::LD_i_a(){
 
 void Z80::LD_r_a(){
   m_regs.r = m_regs.a1;
-}
-
-// DD PREFIX - 8-bit Loads
-//---------------------------------------------------------------//
-
-void Z80::LD_r_ixd(std::uint8_t r, std::uint8_t d){
-  std::uint8_t& dest = registerTable(r);
-  dest = (*(m_memory))[m_regs.ix + d];
-}
-
-void Z80::LD_ixd_r(std::uint8_t d, std::uint8_t r){
-  const std::uint8_t& src = registerTable(r);
-  (*(m_memory))[m_regs.ix + d] = src;
-}
-
-void Z80::LD_ixd_n(std::uint8_t d, std::uint8_t n){
-  (*(m_memory))[m_regs.ix + d] = n;
-}
-
-// FD PREFIX - 8-bit Loads
-//---------------------------------------------------------------//
-
-void Z80::LD_r_iyd(std::uint8_t r, std::uint8_t d){
-  std::uint8_t& dest = registerTable(r);
-  dest = (*(m_memory))[m_regs.iy + d];
-}
-
-void Z80::LD_iyd_r(std::uint8_t d, std::uint8_t r){
-  const std::uint8_t& src = registerTable(r);
-  (*(m_memory))[m_regs.iy + d] = src;
-}
-
-void Z80::LD_iyd_n(std::uint8_t d, std::uint8_t n){
-  (*(m_memory))[m_regs.iy + d] = n;
 }
 
 //---------------------------------------------------------------//
@@ -508,12 +542,81 @@ void Z80::LDDR(){
   else{ return ;}
 }
 
-/*
 void Z80::CPI(){
   // A – (HL), HL ← HL +1, BC ← BC – 1
-  // testing for borrow:
+  std::uint8_t difference = m_regs.a1 - (*(m_memory))[m_regs.hl1];
+  m_regs.hl1 = m_regs.hl1 + 1;
+  m_regs.bc1 = m_regs.bc1 - 1;
+  // conditions:
+  difference > m_regs.a1 ? SetSign(FlagRegister::f1) : ClearSign(FlagRegister::f1);
+  difference == 0 ? SetZero(FlagRegister::f1) : ClearZero(FlagRegister::f1);
+  HalfBorrow8bit(m_regs.a1, (*(m_memory))[m_regs.hl1]) ? SetHalfCarry(FlagRegister::f1) : 
+    ClearHalfCarry(FlagRegister::f1);
+  m_regs.bc1 != 0 ? SetParityOverflow(FlagRegister::f1) : ClearParityOverflow(FlagRegister::f1);
+  SetAddSubtract(FlagRegister::f1);
+  // increment pc normally
+  m_regs.pc = m_regs.pc + 2;
 }
-*/
+
+void Z80::CPIR(){
+  // A – (HL), HL ← HL +1, BC ← BC – 1
+  std::uint8_t difference = m_regs.a1 - (*(m_memory))[m_regs.hl1];
+  m_regs.hl1 = m_regs.hl1 + 1;
+  m_regs.bc1 = m_regs.bc1 - 1;
+  // conditions:
+  difference > m_regs.a1 ? SetSign(FlagRegister::f1) : ClearSign(FlagRegister::f1);
+  difference == 0 ? SetZero(FlagRegister::f1) : ClearZero(FlagRegister::f1);
+  HalfBorrow8bit(m_regs.a1, (*(m_memory))[m_regs.hl1]) ? SetHalfCarry(FlagRegister::f1) : 
+    ClearHalfCarry(FlagRegister::f1);
+  m_regs.bc1 != 0 ? SetParityOverflow(FlagRegister::f1) : ClearParityOverflow(FlagRegister::f1);
+  SetAddSubtract(FlagRegister::f1);
+  // decrement pc conditionally
+  if(m_regs.bc1 != 0 && m_regs.a1 != (*(m_memory))[m_regs.hl1]){
+    m_regs.pc = m_regs.pc - 2;
+  }
+  else{
+    m_regs.pc = m_regs.pc + 2;
+  }
+}
+
+void Z80::CPD(){
+  // A - (HL), HL ← HL - 1, BC ← BC - 1
+  std::uint8_t difference = m_regs.a1 - (*(m_memory))[m_regs.hl1];
+  m_regs.hl1 = m_regs.hl1 - 1;
+  m_regs.bc1 = m_regs.bc1 - 1;
+  // conditions:
+  difference > m_regs.a1 ? SetSign(FlagRegister::f1) : ClearSign(FlagRegister::f1);
+  difference == 0 ? SetZero(FlagRegister::f1) : ClearZero(FlagRegister::f1);
+  HalfBorrow8bit(m_regs.a1, (*(m_memory))[m_regs.hl1]) ? SetHalfCarry(FlagRegister::f1) : 
+    ClearHalfCarry(FlagRegister::f1);
+  m_regs.bc1 != 0 ? SetParityOverflow(FlagRegister::f1) : ClearParityOverflow(FlagRegister::f1);
+  SetAddSubtract(FlagRegister::f1);
+  // increment pc normally
+  m_regs.pc = m_regs.pc + 2;
+}
+
+void Z80::CPDR(){
+  // A - (HL), HL ← HL - 1, BC ← BC - 1
+  std::uint8_t difference = m_regs.a1 - (*(m_memory))[m_regs.hl1];
+  m_regs.hl1 = m_regs.hl1 - 1;
+  m_regs.bc1 = m_regs.bc1 - 1;
+  // conditions:
+  difference > m_regs.a1 ? SetSign(FlagRegister::f1) : ClearSign(FlagRegister::f1);
+  difference == 0 ? SetZero(FlagRegister::f1) : ClearZero(FlagRegister::f1);
+  HalfBorrow8bit(m_regs.a1, (*(m_memory))[m_regs.hl1]) ? SetHalfCarry(FlagRegister::f1) : 
+    ClearHalfCarry(FlagRegister::f1);
+  m_regs.bc1 != 0 ? SetParityOverflow(FlagRegister::f1) : ClearParityOverflow(FlagRegister::f1);
+  SetAddSubtract(FlagRegister::f1);
+  // decrement pc conditionally
+  bool isbcNotzero = m_regs.bc1 != 0;
+  bool isaEqualshl1 = m_regs.a1 == (*(m_memory))[m_regs.hl1];
+  if(isbcNotzero && isaEqualshl1){
+    m_regs.pc = m_regs.pc - 2;
+  }
+  else{
+    m_regs.pc = m_regs.pc + 2;
+  }
+}
 
 // DD PREFIX - Exchange, Blkt, Search
 //---------------------------------------------------------------//
@@ -548,6 +651,293 @@ void Z80::EX_sp_iy(){
   (*(m_memory))[m_regs.sp+1] = iy_high;
   m_regs.iy.low = sp;
   (*(m_memory))[m_regs.sp] = iy_low;
+}
+
+//---------------------------------------------------------------//
+// 8-bit Arithmetric Group
+//---------------------------------------------------------------//
+
+
+std::int8_t Z80::DoADD(const std::int8_t dest, const std::int8_t src){
+  // impl for ADD_x_y functions
+  // casts the unsigned to signed as alu only works on signed arithmetic
+  std::int8_t output = dest + src;
+  bool isOverflow = 
+    ((dest > 0 && src > 0 && output < 0) ||
+     (dest < 0 && src < 0 && output > 0));
+  // conditions
+  output & 0x80 ? SetSign(FlagRegister::f1) : ClearSign(FlagRegister::f1);
+  output == 0 ? SetZero(FlagRegister::f1) : ClearZero(FlagRegister::f1);
+  HalfCarry8bit(dest, src) ? SetHalfCarry(FlagRegister::f1) : ClearHalfCarry(FlagRegister::f1);
+  isOverflow ? SetParityOverflow(FlagRegister::f1) : ClearParityOverflow(FlagRegister::f1);
+  ClearAddSubtract(FlagRegister::f1);
+  Carry8bit(dest, src) ? SetCarry(FlagRegister::f1) : ClearCarry(FlagRegister::f1);
+  return output;
+}
+
+
+void Z80::ADD_a_r(std::uint8_t r){
+  // A = A + r
+  if(!registerParamOkay(r)){
+    throw std::runtime_error{"ADD_a_r: failed to decode register param"};
+  }
+  m_regs.a1 = DoADD(m_regs.a1, registerTable(r));
+}
+
+void Z80::ADD_a_n(std::int8_t n){
+  // A = A + n
+  m_regs.a1 = DoADD(m_regs.a1, n);
+}
+
+void Z80::ADD_a_hl(){
+  // A = A + (hl)
+  m_regs.a1 = DoADD(m_regs.a1, (*(m_memory))[m_regs.hl1]);
+}
+
+void Z80::ADD_a_ixd(std::int8_t d){
+  // A = A + (iy + d)
+  m_regs.a1 = DoADD(m_regs.a1, (*(m_memory))[m_regs.ix + d]);
+}
+
+void Z80::ADD_a_iyd(std::int8_t d){
+  // A = A + (ix + d)
+  m_regs.a1 = DoADD(m_regs.a1, (*(m_memory))[m_regs.iy + d]);
+}
+
+std::int8_t Z80::DoADC(const std::int8_t dest, const std::int8_t src, bool carryIn){
+  // impl for ADC_x_y functions
+  // casts the unsigned to signed as alu only works on signed arithmetic
+  std::int8_t output = dest + src + carryIn;
+  bool isOverflow = 
+    ((dest > 0 && src > 0 && output < 0) ||
+     (dest < 0 && src < 0 && output > 0));  // i dont think carry in affects our overflow condition
+  // conditions
+  output & 0x80 ? SetSign(FlagRegister::f1) : ClearSign(FlagRegister::f1);
+  output == 0 ? SetZero(FlagRegister::f1) : ClearZero(FlagRegister::f1);
+  HalfCarry8bit(dest, src+carryIn) ? SetHalfCarry(FlagRegister::f1) : 
+    ClearHalfCarry(FlagRegister::f1);
+  isOverflow ? SetParityOverflow(FlagRegister::f1) : ClearParityOverflow(FlagRegister::f1);
+  ClearAddSubtract(FlagRegister::f1);
+  Carry8bit(dest, src+carryIn) ? SetCarry(FlagRegister::f1) : ClearCarry(FlagRegister::f1);
+  return output;
+}
+
+void Z80::ADC_a_r(std::uint8_t r){
+  // a = a + r + c
+  if(!registerParamOkay(r)){
+    throw std::runtime_error{"ADC_a_r: failed to decode register"};
+  }
+  const std::uint8_t regval = registerTable(r);
+  m_regs.a1 = DoADC(m_regs.a1, regval, m_regs.f1 & Flags::Carry);
+}
+
+void Z80::ADC_a_n(std::int8_t n){
+  // a = a + n + c
+  m_regs.a1 = DoADC(m_regs.a1, n, m_regs.f1 & Flags::Carry);
+}
+
+void Z80::ADC_a_hl(){
+  // a = a + (hl) + c
+  m_regs.a1 = DoADC(m_regs.a1, (*(m_memory))[m_regs.hl1], m_regs.f1 & Flags::Carry);
+}
+
+void Z80::ADC_a_ixd(std::int8_t d){
+  // a = a + (ix + d) + c
+  m_regs.a1 = DoADC(m_regs.a1, (*(m_memory))[m_regs.ix + d], m_regs.f1 & Flags::Carry);
+}
+
+void Z80::ADC_a_iyd(std::int8_t d){
+  // a = a + (iy + d) + c
+  m_regs.a1 = DoADC(m_regs.a1, (*(m_memory))[m_regs.iy + d], m_regs.f1 & Flags::Carry);
+}
+
+
+std::int8_t Z80::DoSUB(const std::int8_t dest, const std::int8_t src){
+  // impl for SUB_x_y functions
+  // casts the unsigned to signed as alu only works on signed arithmetic
+  std::int8_t output = dest - src;
+  bool isOverflow = 
+    ((src > 0 && dest < 0 && output < 0) ||   // +ve - -ve => -ve
+     (src < 0 && dest > 0 && output > 0));    // -ve - +ve => +ve
+  // conditions
+  output & 0x80 ? SetSign(FlagRegister::f1) : ClearSign(FlagRegister::f1);
+  output == 0 ? SetZero(FlagRegister::f1) : ClearZero(FlagRegister::f1);
+  HalfBorrow8bit(dest, src) ? SetHalfCarry(FlagRegister::f1) : ClearHalfCarry(FlagRegister::f1);
+  isOverflow ? SetParityOverflow(FlagRegister::f1) : ClearParityOverflow(FlagRegister::f1);
+  ClearAddSubtract(FlagRegister::f1);
+  Borrow8bit(dest, src) ? SetCarry(FlagRegister::f1) : ClearCarry(FlagRegister::f1);
+  return output;
+}
+
+void Z80::SUB_a_r(std::uint8_t r){
+  // a = a - r
+  if(!registerParamOkay(r)){
+    throw std::runtime_error{"SUB_a_r: unable to decode register parameter r"};
+  }
+
+  m_regs.a1 = DoSUB(m_regs.a1, registerTable(r));
+}
+
+void Z80::SUB_a_n(std::int8_t n){
+  // a = a - n
+  m_regs.a1 = DoSUB(m_regs.a1, n);
+}
+
+void Z80::SUB_a_hl(){
+  // a = a - (hl)
+  m_regs.a1 = DoSUB(m_regs.a1, (*(m_memory))[m_regs.hl1]);
+}
+
+void Z80::SUB_a_ixd(std::int8_t d){
+  // a = a - (ix + d)
+  m_regs.a1 = DoSUB(m_regs.a1, (*(m_memory))[m_regs.ix + d]);
+}
+
+void Z80::SUB_a_iyd(std::int8_t d){
+  // a = a - (ix + d)
+  m_regs.a1 = DoSUB(m_regs.a1, (*(m_memory))[m_regs.iy + d]);
+}
+
+/*
+std::int8_t Z80::DoAND(const std::uint8_t dest, const std::uint8_t src){
+  // impl for bitwise AND_x_y instructions
+
+  std::uint8_t output = dest & src;
+  // what is overflow for AND?
+  bool isOverflow = 
+    ((src > 0 && dest < 0 && output < 0) || 
+     (src < 0 && dest > 0 && output > 0));    
+  // conditions
+  output & 0x80 ? SetSign(FlagRegister::f1) : ClearSign(FlagRegister::f1);
+  output == 0 ? SetZero(FlagRegister::f1) : ClearZero(FlagRegister::f1);
+  SetHalfCarry(FlagRegister::f1);
+  isOverflow ? SetParityOverflow(FlagRegister::f1) : ClearParityOverflow(FlagRegister::f1);
+  ClearAddSubtract(FlagRegister::f1);
+  ClearCarry(FlagRegister::f1);
+  return output;
+
+}
+*/
+
+std::int8_t Z80::DoXOR(const std::uint8_t dest, const std::uint8_t src){
+  std::uint8_t output = dest ^ src;
+  // conditions
+  output & 0x80 ? SetSign(FlagRegister::f1) : ClearSign(FlagRegister::f1);
+  output == 0 ? SetZero(FlagRegister::f1) : ClearZero(FlagRegister::f1);
+  ClearHalfCarry(FlagRegister::f1);
+  IsEvenParity(output) ? SetParityOverflow(FlagRegister::f1) : ClearParityOverflow(FlagRegister::f1);
+  ClearAddSubtract(FlagRegister::f1);
+  ClearCarry(FlagRegister::f1);
+  return output;
+}
+
+void Z80::XOR_a_r(std::uint8_t r){
+  // a = a ^ r
+  if(!registerParamOkay(r)){
+    throw std::runtime_error{"SUB_a_r: unable to decode register parameter r"};
+  }
+
+  m_regs.a1 = DoXOR(m_regs.a1, registerTable(r));
+}
+
+void Z80::XOR_a_n(std::int8_t n){
+  // a = a ^ n
+  m_regs.a1 = DoXOR(m_regs.a1, n);
+}
+
+void Z80::XOR_a_hl(){
+  // a = a ^ (hl)
+  m_regs.a1 = DoXOR(m_regs.a1, (*(m_memory))[m_regs.hl1]);
+}
+
+void Z80::XOR_a_ixd(std::int8_t d){
+  // a = a ^ (ix + d)
+  m_regs.a1 = DoXOR(m_regs.a1, (*(m_memory))[m_regs.ix + d]);
+}
+
+void Z80::XOR_a_iyd(std::int8_t d){
+  // a = a ^ (iy + d)
+  m_regs.a1 = DoXOR(m_regs.a1, (*(m_memory))[m_regs.iy + d]);
+}
+
+std::uint8_t Z80::DoINC(const std::uint8_t src){
+  // src = src + 1
+  bool isOverflow = src == 0x7F;
+  std::uint8_t output = src + 1;
+  // check conditions
+  output & 0x80 ? SetSign(FlagRegister::f1) : ClearSign(FlagRegister::f1);
+  output == 0 ? SetZero(FlagRegister::f1) : ClearZero(FlagRegister::f1);
+  HalfCarry8bit(src, 1) ? SetHalfCarry(FlagRegister::f1) : ClearHalfCarry(FlagRegister::f1);
+  isOverflow ? SetParityOverflow(FlagRegister::f1) : ClearParityOverflow(FlagRegister::f1);
+  ClearAddSubtract(FlagRegister::f1);
+  return output;
+}
+
+void Z80::INC_r(std::uint8_t r){
+  // r = r + 1
+  if(!registerParamOkay(r)){
+    throw std::runtime_error{"SUB_a_r: unable to decode register parameter r"};
+  }
+  registerTable(r) = DoINC(registerTable(r));
+  m_regs.pc = m_regs.pc + 2;
+
+}
+
+void Z80::INC_hl(){
+  // (hl) = (hl) + 1
+  (*(m_memory))[m_regs.hl1] = DoINC((*(m_memory))[m_regs.hl1]);
+  m_regs.pc = m_regs.pc + 2;
+
+}
+
+void Z80::INC_ixd(std::int8_t d){
+  // (ix+d) = (ix+d) + 1
+  (*(m_memory))[m_regs.ix + d] = DoINC((*(m_memory))[m_regs.ix + d]);
+}
+
+void Z80::INC_iyd(std::int8_t d){
+  // (iy+d) = (iy+d) + 1
+  (*(m_memory))[m_regs.iy + d] = DoINC((*(m_memory))[m_regs.iy + d]);
+}
+
+std::uint8_t Z80::DoDEC(const std::uint8_t src){
+  // src = src - 1
+  bool isOverflow = src == 0x80;
+  std::uint8_t output = src - 1;
+  // check conditions
+  output & 0x80 ? SetSign(FlagRegister::f1) : ClearSign(FlagRegister::f1);
+  output == 0 ? SetZero(FlagRegister::f1) : ClearZero(FlagRegister::f1);
+  HalfBorrow8bit(src, 1) ? SetHalfCarry(FlagRegister::f1) : ClearHalfCarry(FlagRegister::f1);
+  isOverflow ? SetParityOverflow(FlagRegister::f1) : ClearParityOverflow(FlagRegister::f1);
+  SetAddSubtract(FlagRegister::f1);
+  return output;
+}
+
+void Z80::DEC_r(std::uint8_t r){
+  // r = r - 1
+  if(!registerParamOkay(r)){
+    throw std::runtime_error{"SUB_a_r: unable to decode register parameter r"};
+  }
+  registerTable(r) = DoDEC(registerTable(r));
+  m_regs.pc = m_regs.pc + 2;
+}
+
+void Z80::DEC_hl(){
+  // (hl) = (hl) - 1
+  (*(m_memory))[m_regs.hl1] = DoDEC((*(m_memory))[m_regs.hl1]);
+  m_regs.pc = m_regs.pc + 2;
+}
+
+void Z80::DEC_ixd(std::int8_t d){
+  // (ix + d) = (ix + d) - 1
+  (*(m_memory))[m_regs.ix + d] = DoINC((*(m_memory))[m_regs.ix + d]);
+  m_regs.pc = m_regs.pc + 2;
+}
+
+void Z80::DEC_iyd(std::int8_t d){
+  // (iy + d) = (iy + d) - 1
+  (*(m_memory))[m_regs.iy + d] = DoINC((*(m_memory))[m_regs.iy + d]);
+  m_regs.pc = m_regs.pc + 2;
 }
 
 //---------------------------------------------------------------//
@@ -595,7 +985,6 @@ void Z80::EI(){
 // ED PREFIX - General-Purpose Arithmetic and CPU Control Group
 //---------------------------------------------------------------//
 
-/*
 void Z80::NEG(){
   std::uint8_t before = m_regs.a1;
   std::uint8_t after = -m_regs.a1;
@@ -603,12 +992,11 @@ void Z80::NEG(){
   // statuses
   after & 0x80 ? SetSign(FlagRegister::f1) : ClearSign(FlagRegister::f1);
   after == 0 ? SetZero(FlagRegister::f1) : ClearZero(FlagRegister::f1);
-  // BORROW!
+  HalfBorrow8bit(0, before) ? SetHalfCarry(FlagRegister::f1) : ClearHalfCarry(FlagRegister::f1);
   before == 0x80 ? SetParityOverflow(FlagRegister::f1) : ClearParityOverflow(FlagRegister::f1);
   SetAddSubtract(FlagRegister::f1);
   before != 0 ? SetCarry(FlagRegister::f1) : ClearCarry(FlagRegister::f1);
 }
-*/
 
 void Z80::IM0(){
   // sets to interrupt mode 0 
@@ -627,7 +1015,7 @@ void Z80::IM2(){
 }
 
 //---------------------------------------------------------------//
-// Roate and Shift Group
+// Rotate and Shift Group
 //---------------------------------------------------------------//
 
 void Z80::RLCA(){
