@@ -1,9 +1,14 @@
 #include "z80.hpp"
+#include "cpu/instruction_tables/noprefixtable.hpp"
+#include <memory>
 #include <stdexcept>
 
 namespace trpp{
 
+
 Z80::Z80():
+  pNoPrefixTable{std::make_unique<instructions::NoPrefixTable>()},
+  pCBTable{std::make_unique<instructions::CBTable>()},
   m_regs{},
   m_iff1{false},
   m_iff2{false},
@@ -16,19 +21,19 @@ Z80::Z80():
 void Z80::Tick(){
   // instruction stepped interpreter
   std::uint8_t byte1 = (*(m_memory))[m_regs.pc];
+  m_regs.pc = m_regs.pc + 1;
   switch(byte1){
     case 0xED:
       // is ED prefixed
       break;
     case 0xDD:
-      // is ED prefixed
+      // is DD prefixed
       break;
     case 0xFD:
-      // is ED prefixed
+      // is FD prefixed
       break;
     default:
-      std::uint8_t byte2 = (*(m_memory))[m_regs.pc + 1];
-      TickNoPrefix(byte2);
+      TickNoPrefix(byte1);
   }
 }
 
@@ -38,7 +43,7 @@ void Z80::TickNoPrefix(std::uint8_t opcode){
       NOP();
       return;
     case 0x01: {
-      auto nn = FetchNN();
+      std::uint8_t nn = (*(m_memory))[m_regs.pc];
       LD_r_n(opcode & maskP, nn);
       return;
     }
@@ -222,7 +227,7 @@ void Z80::LD_r_ixd(std::uint8_t r, std::int8_t d){
   dest = (*(m_memory))[m_regs.ix + d];
 }
 
-void Z80::LD_r_iyd(std::uint8_t r, std::uint8_t d){
+void Z80::LD_r_iyd(std::uint8_t r, std::int8_t d){
   std::uint8_t& dest = registerTable(r);
   dest = (*(m_memory))[m_regs.iy + d];
 }
@@ -232,12 +237,12 @@ void Z80::LD_hl_r(std::uint8_t r){
   (*(m_memory))[m_regs.hl1] = src;
 }
 
-void Z80::LD_ixd_r(std::uint8_t d, std::uint8_t r){
+void Z80::LD_ixd_r(std::int8_t d, std::uint8_t r){
   const std::uint8_t& src = registerTable(r);
   (*(m_memory))[m_regs.ix + d] = src;
 }
 
-void Z80::LD_iyd_r(std::uint8_t d, std::uint8_t r){
+void Z80::LD_iyd_r(std::int8_t d, std::uint8_t r){
   const std::uint8_t& src = registerTable(r);
   (*(m_memory))[m_regs.iy + d] = src;
 }
@@ -246,11 +251,11 @@ void Z80::LD_hl_n(std::uint8_t n){
   (*(m_memory))[m_regs.hl1] = n;
 }
 
-void Z80::LD_ixd_n(std::uint8_t d, std::uint8_t n){
+void Z80::LD_ixd_n(std::int8_t d, std::uint8_t n){
   (*(m_memory))[m_regs.ix + d] = n;
 }
 
-void Z80::LD_iyd_n(std::uint8_t d, std::uint8_t n){
+void Z80::LD_iyd_n(std::int8_t d, std::uint8_t n){
   (*(m_memory))[m_regs.iy + d] = n;
 }
 
@@ -274,9 +279,8 @@ void Z80::LD_de_a(){
   (*(m_memory))[m_regs.de1] = m_regs.a1;
 }
 
-void Z80::LD_nn_a(std::uint8_t n1, std::uint8_t n2){
-  std::uint16_t addr = formWord(n1, n2);
-  (*(m_memory))[addr] = m_regs.a1;
+void Z80::LD_nn_a(std::uint16_t nn){
+  (*(m_memory))[nn] = m_regs.a1;
 }
 
 void Z80::LD_a_i(){
@@ -320,52 +324,22 @@ void Z80::LD_dd_nn(std::uint8_t dd, std::uint8_t n1, std::uint8_t n2){
   rr = nn;
 }
 
-void Z80::LD_hl_nn(std::uint8_t n1, std::uint8_t n2){
-  m_regs.hl1 = (*(m_memory))[formWord(n1, n2)];
+void Z80::LD_ix_nn(std::uint16_t nn){
+  m_regs.ix = nn;
 }
 
-void Z80::LD_nn_hl(std::uint16_t nn){
-  (*(m_memory))[nn] = m_regs.l1;
-  (*(m_memory))[nn+1] = m_regs.h1;
+void Z80::LD_iy_nn(std::uint16_t nn){
+  m_regs.iy = nn;
 }
 
-void Z80::LD_sp_hl(){
-  m_regs.sp = m_regs.hl1;
+void Z80::LD_hl_nn(std::uint16_t nn){
+  m_regs.hl1 = (*(m_memory))[nn];
 }
-
-void Z80::Push_qq(std::uint8_t qq){
-  Z80RegisterPair& rr = registerPairAFTable(qq);
-  PushByte(rr.high);
-  PushByte(rr.low);
-}
-
-void Z80::Pop_qq(std::uint8_t qq){
-  Z80RegisterPair& rr = registerPairAFTable(qq);
-  rr.low = (*(m_memory))[m_regs.sp++];
-  rr.high = (*(m_memory))[m_regs.sp++];
-}
-
-// ED PREFIX - 16-bit Loads
-//---------------------------------------------------------------//
 
 void Z80::LD_dd_nn(std::uint8_t dd, std::uint16_t nn){
   Z80RegisterPair& rr = registerPairSPTable(dd);
   rr.low = (*(m_memory))[nn];
   rr.high = (*(m_memory))[nn+1];
-}
-
-void Z80::LD_nn_dd(std::uint8_t nn, std::uint16_t dd){
-  Z80RegisterPair& rr = registerPairSPTable(dd);
-  (*(m_memory))[nn] = rr.low;
-  (*(m_memory))[nn+1] = rr.high;
-}
-
-// DD PREFIX - 16-bit Loads
-//---------------------------------------------------------------//
-
-void Z80::LD_ix_nn(std::uint8_t n1, std::uint8_t n2){
-  std::uint16_t nn = formWord(n2, n1);
-  m_regs.ix = nn;
 }
 
 void Z80::LD_ix_nn_indirect(std::uint16_t nn){
@@ -374,13 +348,49 @@ void Z80::LD_ix_nn_indirect(std::uint16_t nn){
   m_regs.ix.high =  (*(m_memory))[nn+1];
 }
 
+void Z80::LD_iy_nn_indirect(std::uint16_t nn){
+  m_regs.iy = 0;
+  m_regs.iy.low = (*(m_memory))[nn];
+  m_regs.iy.high =  (*(m_memory))[nn+1];
+}
+
+void Z80::LD_nn_hl(std::uint16_t nn){
+  (*(m_memory))[nn] = m_regs.l1;
+  (*(m_memory))[nn+1] = m_regs.h1;
+}
+
+void Z80::LD_nn_dd(std::uint8_t nn, std::uint16_t dd){
+  Z80RegisterPair& rr = registerPairSPTable(dd);
+  (*(m_memory))[nn] = rr.low;
+  (*(m_memory))[nn+1] = rr.high;
+}
+
 void Z80::LD_nn_ix(std::uint16_t nn){
   (*(m_memory))[nn] = m_regs.ix.low;
   (*(m_memory))[nn+1] = m_regs.ix.high;
 }
 
+void Z80::LD_nn_iy(std::uint16_t nn){
+  (*(m_memory))[nn] = m_regs.iy.low;
+  (*(m_memory))[nn+1] = m_regs.iy.high;
+}
+
+void Z80::LD_sp_hl(){
+  m_regs.sp = m_regs.hl1;
+}
+
 void Z80::LD_sp_ix(){
   m_regs.sp = m_regs.ix;
+}
+
+void Z80::LD_sp_iy(){
+  m_regs.sp = m_regs.iy;
+}
+
+void Z80::Push_qq(std::uint8_t qq){
+  Z80RegisterPair& rr = registerPairAFTable(qq);
+  PushByte(rr.high);
+  PushByte(rr.low);
 }
 
 void Z80::Push_ix(){
@@ -389,41 +399,24 @@ void Z80::Push_ix(){
   PushByte(ix.low);
 }
 
+void Z80::Push_iy(){
+  const Z80RegisterPair& iy = m_regs.iy;
+  PushByte(iy.high);
+  PushByte(iy.low);
+}
+
+void Z80::Pop_qq(std::uint8_t qq){
+  Z80RegisterPair& rr = registerPairAFTable(qq);
+  rr.low = (*(m_memory))[m_regs.sp++];
+  rr.high = (*(m_memory))[m_regs.sp++];
+}
+
 void Z80::Pop_ix(){
   std::uint8_t low = (*(m_memory))[m_regs.sp++];
   std::uint8_t high = (*(m_memory))[m_regs.sp++];
   m_regs.ix = 0;
   m_regs.ix.high = high;
   m_regs.ix.low = low;
-}
-
-// FD PREFIX - 16-bit Loads
-//---------------------------------------------------------------//
-
-void Z80::LD_iy_nn(std::uint8_t n1, std::uint8_t n2){
-  std::uint16_t nn = formWord(n2, n1);
-  m_regs.iy = nn;
-}
-
-void Z80::LD_iy_nn_indirect(std::uint16_t nn){
-  m_regs.iy = 0;
-  m_regs.iy.low = (*(m_memory))[nn];
-  m_regs.iy.high =  (*(m_memory))[nn+1];
-}
-
-void Z80::LD_nn_iy(std::uint16_t nn){
-  (*(m_memory))[nn] = m_regs.iy.low;
-  (*(m_memory))[nn+1] = m_regs.iy.high;
-}
-
-void Z80::LD_sp_iy(){
-  m_regs.sp = m_regs.iy;
-}
-
-void Z80::Push_iy(){
-  const Z80RegisterPair& iy = m_regs.iy;
-  PushByte(iy.high);
-  PushByte(iy.low);
 }
 
 void Z80::Pop_iy(){
@@ -478,15 +471,38 @@ void Z80::EX_sp_hl(){
   (*(m_memory))[m_regs.sp+1] = h;
   m_regs.l1 = sp;
   (*(m_memory))[m_regs.sp] = l;
-
 }
 
-// ED PREFIX - Exchange, Blkt, Search
-//---------------------------------------------------------------//
+void Z80::EX_sp_ix(){
+  // ix.high <-> (SP+1), ix.low <->(SP)
+  // temporary buffers
+  std::uint8_t sp = (*(m_memory))[m_regs.sp];
+  std::uint8_t spnext = (*(m_memory))[m_regs.sp+1];
+  std::uint8_t ix_high = m_regs.ix.high;
+  std::uint8_t ix_low = m_regs.ix.low;
+  // now the swapping occurs
+  m_regs.ix.high = spnext;
+  (*(m_memory))[m_regs.sp+1] = ix_high;
+  m_regs.ix.low = sp;
+  (*(m_memory))[m_regs.sp] = ix_low;
+}
+
+void Z80::EX_sp_iy(){
+  // iy.high <-> (SP+1), iy.low <->(SP)
+  // temporary buffers
+  std::uint8_t sp = (*(m_memory))[m_regs.sp];
+  std::uint8_t spnext = (*(m_memory))[m_regs.sp+1];
+  std::uint8_t iy_high = m_regs.iy.high;
+  std::uint8_t iy_low = m_regs.iy.low;
+  // now the swapping occurs
+  m_regs.iy.high = spnext;
+  (*(m_memory))[m_regs.sp+1] = iy_high;
+  m_regs.iy.low = sp;
+  (*(m_memory))[m_regs.sp] = iy_low;
+}
 
 void Z80::LDI(){
   //(DE) <- (HL), DE <- DE + 1, HL <- HL + 1, BC <- BC – 1
-
   std::uint16_t current_bc = m_regs.bc1;  // kept for testing pv flag
   // actual work
   (*(m_memory))[m_regs.de1] = (*(m_memory))[m_regs.hl1];
@@ -498,7 +514,6 @@ void Z80::LDI(){
   ClearAddSubtract(FlagRegister::f1);
   current_bc -1 != 0 ? SetParityOverflow(FlagRegister::f1) : 
     ClearParityOverflow(FlagRegister::f1);
-
 }
 
 void Z80::LDIR(){
@@ -618,45 +633,9 @@ void Z80::CPDR(){
   }
 }
 
-// DD PREFIX - Exchange, Blkt, Search
-//---------------------------------------------------------------//
-
-void Z80::EX_sp_ix(){
-  // ix.high <-> (SP+1), ix.low <->(SP)
-  // temporary buffers
-  std::uint8_t sp = (*(m_memory))[m_regs.sp];
-  std::uint8_t spnext = (*(m_memory))[m_regs.sp+1];
-  std::uint8_t ix_high = m_regs.ix.high;
-  std::uint8_t ix_low = m_regs.ix.low;
-  // now the swapping occurs
-  m_regs.ix.high = spnext;
-  (*(m_memory))[m_regs.sp+1] = ix_high;
-  m_regs.ix.low = sp;
-  (*(m_memory))[m_regs.sp] = ix_low;
-
-}
-
-// FD PREFIX - Exchange, Blkt, Search
-//---------------------------------------------------------------//
-
-void Z80::EX_sp_iy(){
-  // iy.high <-> (SP+1), iy.low <->(SP)
-  // temporary buffers
-  std::uint8_t sp = (*(m_memory))[m_regs.sp];
-  std::uint8_t spnext = (*(m_memory))[m_regs.sp+1];
-  std::uint8_t iy_high = m_regs.iy.high;
-  std::uint8_t iy_low = m_regs.iy.low;
-  // now the swapping occurs
-  m_regs.iy.high = spnext;
-  (*(m_memory))[m_regs.sp+1] = iy_high;
-  m_regs.iy.low = sp;
-  (*(m_memory))[m_regs.sp] = iy_low;
-}
-
 //---------------------------------------------------------------//
 // 8-bit Arithmetric Group
 //---------------------------------------------------------------//
-
 
 std::int8_t Z80::DoADD(const std::int8_t dest, const std::int8_t src){
   // impl for ADD_x_y functions
@@ -951,6 +930,19 @@ void Z80::CPL(){
   SetAddSubtract(FlagRegister::f1);
 }
 
+void Z80::NEG(){
+  std::uint8_t before = m_regs.a1;
+  std::uint8_t after = -m_regs.a1;
+  m_regs.a1 = after;
+  // statuses
+  after & 0x80 ? SetSign(FlagRegister::f1) : ClearSign(FlagRegister::f1);
+  after == 0 ? SetZero(FlagRegister::f1) : ClearZero(FlagRegister::f1);
+  HalfBorrow8bit(0, before) ? SetHalfCarry(FlagRegister::f1) : ClearHalfCarry(FlagRegister::f1);
+  before == 0x80 ? SetParityOverflow(FlagRegister::f1) : ClearParityOverflow(FlagRegister::f1);
+  SetAddSubtract(FlagRegister::f1);
+  before != 0 ? SetCarry(FlagRegister::f1) : ClearCarry(FlagRegister::f1);
+}
+
 void Z80::CCF(){
   // carry is inverted
   bool prevCarry = m_regs.f1 & Flags::Carry;
@@ -982,22 +974,6 @@ void Z80::EI(){
   m_iff2 = true;
 }
 
-// ED PREFIX - General-Purpose Arithmetic and CPU Control Group
-//---------------------------------------------------------------//
-
-void Z80::NEG(){
-  std::uint8_t before = m_regs.a1;
-  std::uint8_t after = -m_regs.a1;
-  m_regs.a1 = after;
-  // statuses
-  after & 0x80 ? SetSign(FlagRegister::f1) : ClearSign(FlagRegister::f1);
-  after == 0 ? SetZero(FlagRegister::f1) : ClearZero(FlagRegister::f1);
-  HalfBorrow8bit(0, before) ? SetHalfCarry(FlagRegister::f1) : ClearHalfCarry(FlagRegister::f1);
-  before == 0x80 ? SetParityOverflow(FlagRegister::f1) : ClearParityOverflow(FlagRegister::f1);
-  SetAddSubtract(FlagRegister::f1);
-  before != 0 ? SetCarry(FlagRegister::f1) : ClearCarry(FlagRegister::f1);
-}
-
 void Z80::IM0(){
   // sets to interrupt mode 0 
   m_imode = InterruptMode::mode0;
@@ -1006,12 +982,53 @@ void Z80::IM0(){
 void Z80::IM1(){
   // sets to interrupt mode 1
   m_imode = InterruptMode::mode1;
-
 }
 
 void Z80::IM2(){
   // sets to interrupt mode 2
   m_imode = InterruptMode::mode2;
+}
+
+//---------------------------------------------------------------//
+// 16-bit Arithmetric Group
+//---------------------------------------------------------------//
+
+void Z80::INC_ss(std::uint8_t ss){
+  // ss = ss + 1
+  if(!CheckSS(ss)){
+    throw std::runtime_error{"INC_ss :: failed to decode ss"};
+  }
+  auto& val =  registerPairSPTable(ss);
+  val = val + 1;
+}
+
+void Z80::INC_IX(){
+  // ix = ix + 1
+  m_regs.ix = m_regs.ix + 1;
+}
+
+void Z80::INC_IY(){
+  // iy = iy + 1
+  m_regs.iy = m_regs.iy + 1;
+}
+
+void Z80::DEC_ss(std::uint8_t ss){
+  // ss = ss - 1
+  if(!CheckSS(ss)){
+    throw std::runtime_error{"DEC_ss :: failed to decode ss"};
+  }
+  auto& val =  registerPairSPTable(ss);
+  val = val - 1;
+}
+
+void Z80::DEC_IX(){
+  // ix = ix - 1
+  m_regs.ix = m_regs.ix - 1;
+}
+
+void Z80::DEC_IY(){
+  // iy = iy - 1
+  m_regs.iy = m_regs.iy - 1;
 }
 
 //---------------------------------------------------------------//
@@ -1113,7 +1130,7 @@ void Z80::RLC_hl(){
 
 // so much of rlc instructions are repeated... probably should refactor
 
-void Z80::RLC_ixd(std::uint8_t d){
+void Z80::RLC_ixd(std::int8_t d){
   // The contents of memory address ix+d are rotated left 1 bit position. The sign bit
   // (bit 7) is copied to the Carry flag and also to bit 0.
   std::uint8_t& mem = (*(m_memory))[m_regs.ix + d];
@@ -1131,7 +1148,7 @@ void Z80::RLC_ixd(std::uint8_t d){
   bit8 ? SetCarry(FlagRegister::f1) : ClearCarry(FlagRegister::f1);
 }
 
-void Z80::RLC_iyd(std::uint8_t d){
+void Z80::RLC_iyd(std::int8_t d){
   // The contents of memory address iy+d are rotated left 1 bit position. The sign bit
   // (bit 7) is copied to the Carry flag and also to bit 0.
   std::uint8_t& mem = (*(m_memory))[m_regs.iy + d];
@@ -1177,11 +1194,11 @@ void Z80::RL_hl(){
   DoRL((*(m_memory))[m_regs.hl1]);
 }
 
-void Z80::RL_ixd(std::uint8_t d){
+void Z80::RL_ixd(std::int8_t d){
   DoRL((*(m_memory))[m_regs.ix + d]);
 }
 
-void Z80::RL_iyd(std::uint8_t d){
+void Z80::RL_iyd(std::int8_t d){
   DoRL((*(m_memory))[m_regs.iy + d]);
 }
 
@@ -1203,13 +1220,15 @@ void Z80::RRC_hl(){
   DoRRC((*(m_memory))[m_regs.hl1]);
 }
 
-void Z80::RRC_ixd(std::uint8_t d){
+void Z80::RRC_ixd(std::int8_t d){
   DoRRC((*(m_memory))[m_regs.ix + d]);
 }
 
-void Z80::RRC_iyd(std::uint8_t d){
+void Z80::RRC_iyd(std::int8_t d){
   DoRRC((*(m_memory))[m_regs.iy + d]);
 }
+
+// shift right
 
 void Z80::DoRR(std::uint8_t& src){
   // The contents of operand m are rotated right 1 bit position through the Carry flag. The 
@@ -1228,6 +1247,27 @@ void Z80::DoRR(std::uint8_t& src){
   bit0 ? SetCarry(FlagRegister::f1) : ClearCarry(FlagRegister::f1);
 }
 
+void Z80::RR_r(std::uint8_t r){
+  if(!registerParamOkay(r)){
+    throw std::runtime_error{"RR_r: failed to decode r"};
+  }
+  DoRR(registerTable(r));
+}
+
+void Z80::RR_hl(){
+  DoRR((*(m_memory))[m_regs.hl1]);
+}
+
+void Z80::RR_ixd(std::int8_t d){
+  DoRR((*(m_memory))[m_regs.ix + d]);
+}
+
+void Z80::RR_iyd(std::int8_t d){
+  DoRR((*(m_memory))[m_regs.iy + d]);
+}
+
+// shift left arithmetic
+
 void Z80::DoSLA(std::uint8_t& src){
   // arithemtic left shift into a + src
   bool leadingbit = src & (1 << 7);
@@ -1240,6 +1280,28 @@ void Z80::DoSLA(std::uint8_t& src){
   ClearAddSubtract(FlagRegister::f1);
   leadingbit ? SetCarry(FlagRegister::f1) : ClearCarry(FlagRegister::f1);
 }
+
+
+void Z80::SLA_r(std::uint8_t r){
+  if(!registerParamOkay(r)){
+    throw std::runtime_error{"SLA_r: failed to decode r"};
+  }
+  DoSLA(registerTable(r));
+}
+
+void Z80::SLA_hl(){
+  DoSLA((*(m_memory))[m_regs.hl1]);
+}
+
+void Z80::SLA_ixd(std::int8_t d){
+  DoSLA((*(m_memory))[m_regs.ix + d]);
+}
+
+void Z80::SLA_iyd(std::int8_t d){
+  DoSLA((*(m_memory))[m_regs.iy + d]);
+}
+
+// shift right arithmetic
 
 void Z80::DoSRA(std::uint8_t& src){
   // arithmetic right shift
@@ -1256,6 +1318,27 @@ void Z80::DoSRA(std::uint8_t& src){
   leastbit ? SetCarry(FlagRegister::f1) : ClearCarry(FlagRegister::f1);
 }
 
+void Z80::SRA_r(std::uint8_t r){
+  if(!registerParamOkay(r)){
+    throw std::runtime_error{"SRA_r: failed to decode r"};
+  }
+  DoSRA(registerTable(r));
+}
+
+void Z80::SRA_hl(){
+  DoSRA((*(m_memory))[m_regs.hl1]);
+}
+
+void Z80::SRA_ixd(std::int8_t d){
+  DoSRA((*(m_memory))[m_regs.ix + d]);
+}
+
+void Z80::SRA_iyd(std::int8_t d){
+  DoSRA((*(m_memory))[m_regs.iy + d]);
+}
+
+// shift right logical
+
 void Z80::DoSRL(std::uint8_t& src){
   // logical right shift
   bool leastbit = src & 1;
@@ -1268,6 +1351,25 @@ void Z80::DoSRL(std::uint8_t& src){
   IsEvenParity(src) ? SetParityOverflow(FlagRegister::f1) : ClearParityOverflow(FlagRegister::f1);
   ClearAddSubtract(FlagRegister::f1);
   leastbit ? SetCarry(FlagRegister::f1) : ClearCarry(FlagRegister::f1);
+}
+
+void Z80::SRL_r(std::uint8_t r){
+  if(!registerParamOkay(r)){
+    throw std::runtime_error{"SRL_r: failed to decode r"};
+  }
+  DoSRL(registerTable(r));
+}
+
+void Z80::SRL_hl(){
+  DoSRL((*(m_memory))[m_regs.hl1]);
+}
+
+void Z80::SRL_ixd(std::int8_t d){
+  DoSRA((*(m_memory))[m_regs.ix + d]);
+}
+
+void Z80::SRL_iyd(std::int8_t d){
+  DoSRA((*(m_memory))[m_regs.iy + d]);
 }
 
 /*
@@ -1322,7 +1424,7 @@ void Z80::BIT_b_hl(std::uint8_t b){
   throw std::runtime_error{"S, P/V Unknown for Bit_b_r"};
 }
 
-void Z80::BIT_b_ixd(std::uint8_t b, std::uint8_t d){
+void Z80::BIT_b_ixd(std::uint8_t b, std::int8_t d){
   if(!b_is_valid(b)){
     throw std::runtime_error{"invalid b operand in Z80::Bit_b_r"};
   }
@@ -1335,7 +1437,7 @@ void Z80::BIT_b_ixd(std::uint8_t b, std::uint8_t d){
   throw std::runtime_error{"S, P/V Unknown for Bit_b_r"};
 }
 
-void Z80::BIT_b_iyd(std::uint8_t b, std::uint8_t d){
+void Z80::BIT_b_iyd(std::uint8_t b, std::int8_t d){
   if(!b_is_valid(b)){
     throw std::runtime_error{"invalid b operand in Z80::Bit_b_r"};
   }
