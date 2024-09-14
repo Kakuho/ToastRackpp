@@ -1,11 +1,17 @@
 #ifndef Z80_HPP
 #define Z80_HPP
 
+// This is the universal Z80 class which will be used in the 48k and the
+// 128k machines
+//
+// Reference: Zilog Z80 Manual
+
 #include <cstdint>
 #include <iostream>
 #include <stdexcept>
 #include <type_traits>
 #include <memory>
+#include <format>
 
 #include "z80registers.hpp"
 #include "cpulogger.hpp"
@@ -13,31 +19,42 @@
 #include "../utils.hpp"
 
 // tables
-#include "instruction_tables/noprefixtable.hpp"
-#include "instruction_tables/cbprefixtable.hpp"
+#include "instruction_tables/noprefix_table.hpp"
+#include "instruction_tables/cb_table.hpp"
 
 namespace trpp{
 
 class Z80{
   public:
+    //-------------------------------------------------------------
     // lifetime
+    //-------------------------------------------------------------
+  
     explicit Z80();
     virtual ~Z80() = default;
     void ConnectMemory(ZxMemory* memory){ m_memory = memory;}
 
-  private:
-    // tables
+    //-------------------------------------------------------------
+    // Instruction Tables
+    //-------------------------------------------------------------
+
     std::unique_ptr<instructions::NoPrefixTable> pNoPrefixTable;
     std::unique_ptr<instructions::CBTable> pCBTable;
 
-  public:
-    // standard operational functions
-    //    masks useful for decoding
+    //-------------------------------------------------------------
+    // Masks useful for decoding instructions
+    //-------------------------------------------------------------
+
     static constexpr std::uint8_t maskX = 0b1100'0000;
     static constexpr std::uint8_t maskY = 0b0011'1000;
     static constexpr std::uint8_t maskZ = 0b0000'0111;
     static constexpr std::uint8_t maskP = 0b0011'0000;
     static constexpr std::uint8_t maskQ = 0b0000'1000;
+
+    //-------------------------------------------------------------
+    //  Cpu Driver function
+    //-------------------------------------------------------------
+
     void Tick();
     void TickNoPrefix(std::uint8_t opcode);
     std::uint8_t FetchNN();
@@ -47,6 +64,19 @@ class Z80{
     void Execute();
 
     enum class InterruptMode{mode0, mode1, mode2};
+
+    //-------------------------------------------------------------
+    // Memory functions
+    //-------------------------------------------------------------
+
+    // memory addressing functions
+    constexpr std::uint8_t GetByte(std::uint16_t address) const;
+    constexpr void SetByte(std::uint16_t address, std::uint8_t value);
+    constexpr std::uint16_t formWord(std::uint8_t high, std::uint8_t low) const;
+
+    // stack functions
+    void PushByte(std::uint8_t byte);
+    std::uint8_t StackPopByte();
 
   protected:
     // allow derived classes do whatever they want with these,
@@ -62,26 +92,21 @@ class Z80{
     bool m_nmi;
     InterruptMode m_imode;
 
-  protected:
-    // instruction operand tables:
+    //-------------------------------------------------------------
+    // Instruction operand tables
+    //  decodes the input and provides the correct registers for use
+    //-------------------------------------------------------------
+
     std::uint8_t& registerTable(std::uint8_t r);
     Z80RegisterPair& registerPairSPTable(std::uint8_t r); 
     Z80RegisterPair& registerPairAFTable(std::uint8_t r); 
     bool registerParamOkay(std::uint8_t r){ return r < 7;}
 
   public:
-    // memory addressing functions
-    constexpr std::uint16_t formWord(std::uint8_t high, std::uint8_t low) const{
-      return (static_cast<std::uint16_t>(high) << 8) | low;
-    }
+    //-------------------------------------------------------------
+    // Flag related
+    //-------------------------------------------------------------
 
-    // stack functions
-    void PushByte(std::uint8_t byte);
-    std::uint8_t StackPopByte();
-
-
-  public:
-    // flags status related
     struct Flags{
       static constexpr std::uint8_t Carry = 0x01;
       static constexpr std::uint8_t AddSubtract = 0x02;
@@ -131,7 +156,6 @@ class Z80{
     bool GetZero()            {return m_regs.f1 & Flags::Zero;}
     bool GetSign()            {return m_regs.f1 & Flags::Sign;}
 
-  public:
     //---------------------------------------------------------------//
     // INSTRUCTIONS
     // (organised by instruction groups and page, prefix is at the end)

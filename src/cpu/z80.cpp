@@ -1,10 +1,12 @@
 #include "z80.hpp"
-#include "cpu/instruction_tables/noprefixtable.hpp"
 #include <memory>
 #include <stdexcept>
 
 namespace trpp{
 
+//-------------------------------------------------------------
+// lifetime
+//-------------------------------------------------------------
 
 Z80::Z80():
   pNoPrefixTable{std::make_unique<instructions::NoPrefixTable>()},
@@ -18,11 +20,17 @@ Z80::Z80():
 
 }
 
+//-------------------------------------------------------------
+//  Cpu Driver function
+//-------------------------------------------------------------
+
 void Z80::Tick(){
   // instruction stepped interpreter
   std::uint8_t byte1 = (*(m_memory))[m_regs.pc];
   m_regs.pc = m_regs.pc + 1;
   switch(byte1){
+    case 0xCD:
+
     case 0xED:
       // is ED prefixed
       break;
@@ -51,6 +59,9 @@ void Z80::TickNoPrefix(std::uint8_t opcode){
       break;
     }
     default:
+      throw std::runtime_error{
+        std::format("Error::Opcode::{0}::UNKNOWN", opcode)
+      };
       break;
   }
 }
@@ -59,7 +70,28 @@ void Z80::Decode(){
 
 }
 
-//---------------------------------------------------------------//
+//-------------------------------------------------------------
+//  Memory Functions
+//-------------------------------------------------------------
+
+// Memory Addressing related
+
+constexpr std::uint8_t 
+Z80::GetByte(std::uint16_t address) const{
+  return (*(m_memory))[address];
+}
+
+constexpr void 
+Z80::SetByte(std::uint16_t address, std::uint8_t value){
+  (*(m_memory))[address] = value;
+}
+
+constexpr std::uint16_t 
+Z80::formWord(std::uint8_t high, std::uint8_t low) const{
+  return (static_cast<std::uint16_t>(high) << 8) | low;
+}
+
+// Stack related
 
 void Z80::PushByte(std::uint8_t byte){
   (*(m_memory))[--m_regs.sp] = byte;
@@ -248,6 +280,7 @@ void Z80::LD_iyd_r(std::int8_t d, std::uint8_t r){
 }
 
 void Z80::LD_hl_n(std::uint8_t n){
+  // Operation: (HL) = n
   (*(m_memory))[m_regs.hl1] = n;
 }
 

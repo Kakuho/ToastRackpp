@@ -2,6 +2,7 @@
 #define DEBUGZ80_HPP
 
 #include "z80.hpp"
+#include "cpulogger.hpp"
 
 namespace trpp{
 

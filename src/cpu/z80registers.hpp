@@ -122,10 +122,6 @@ struct Z80RegisterSet{
     std::uint8_t& l2 = hl2.low; 
 };
 
-struct Z80State{
-
-};
-
 }
 
 #endif

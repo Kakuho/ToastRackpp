@@ -5,13 +5,14 @@
 * LD r, (HL)
 * LD r, (IX+d) 
 * LD (HL), r    
+* LD (HL), n    
 
 # In progress:
-* LD (HL), n    
+
+* LD r, (IX+d) (unsure about memory wrapping on ix + d < 0)
 
 ## To Write:
 
-* LD r, (IX+d) (unsure about memory wrapping on ix + d < 0)
 * LD r, (IY+d)  
 * LD (IX+d), r  
 * LD (IY+d), r  

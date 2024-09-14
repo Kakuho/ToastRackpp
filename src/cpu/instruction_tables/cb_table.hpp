@@ -1,0 +1,53 @@
+#ifndef I_TABLE_CBPREFIX_HPP
+#define I_TABLE_CBPREFIX_HPP
+
+#include <array>
+#include <cstdint>
+#include <cassert>
+
+#include "enums/cbenums.hpp"
+
+namespace trpp::instructions{
+
+class CBTable{
+  public:
+    //-------------------------------------------------------------
+    //  Constants
+    //-------------------------------------------------------------
+    
+    static constexpr std::size_t TABLE_SIZE = 0xff;
+
+    //-------------------------------------------------------------
+    // lifetime
+    //-------------------------------------------------------------
+
+    CBTable();
+    //  only allow default initialisation
+    CBTable(const CBTable& src) = delete;
+    CBTable& operator==(const CBTable& src) = delete;
+    CBTable(CBTable&& src) = delete;
+    CBTable& operator==(CBTable&& src) = delete;
+
+    //-------------------------------------------------------------
+    // Operator overloads
+    //-------------------------------------------------------------
+  
+    //  provide read-only lookup semantics
+    [[nodiscard]] constexpr const CBenums& operator[](std::size_t index) const noexcept;
+
+
+  private:
+    //-------------------------------------------------------------
+    //  Used as a private initialisation routine
+    //-------------------------------------------------------------
+    
+    void SetEntries() noexcept;
+
+  private:
+    std::array<CBenums, 0xFF> m_buffer;
+};
+
+
+} // namespace trpp::instructions
+
+#endif
