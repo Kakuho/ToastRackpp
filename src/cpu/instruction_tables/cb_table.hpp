@@ -33,7 +33,7 @@ class CBTable{
     //-------------------------------------------------------------
   
     //  provide read-only lookup semantics
-    [[nodiscard]] constexpr const CBenums& operator[](std::size_t index) const noexcept;
+    [[nodiscard]] CBenums operator[](std::size_t index) const ;
 
 
   private:

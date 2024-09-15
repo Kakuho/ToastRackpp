@@ -18,8 +18,8 @@ set(CXX_SRCS
 
       # File loaders
       src/loader/baseLoader.cpp 
-      src/loader/z80loader.cpp 
-      src/loader/taploader.cpp
+      src/loader/z80loader/z80loader.cpp 
+      src/loader/taploader/taploader.cpp
    )
 
 add_executable(toastrack src/main.cpp ${CXX_SRCS})

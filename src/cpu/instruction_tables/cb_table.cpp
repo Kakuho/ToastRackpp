@@ -23,8 +23,8 @@ void CBTable::SetEntries() noexcept{
 // Operator overloads
 //-------------------------------------------------------------
 
-[[nodiscard]] constexpr const CBenums& 
-CBTable::operator[](std::size_t index) const noexcept{ 
+[[nodiscard]] CBenums 
+CBTable::operator[](std::size_t index) const { 
   assert(index < TABLE_SIZE);
   return m_buffer[index];
 }

@@ -1,4 +1,5 @@
 #include "z80.hpp"
+#include "cpu/instruction_tables/enums/cbenums.hpp"
 #include <memory>
 #include <stdexcept>
 
@@ -30,7 +31,8 @@ void Z80::Tick(){
   m_regs.pc = m_regs.pc + 1;
   switch(byte1){
     case 0xCD:
-
+      // is CD prefixed
+      break;
     case 0xED:
       // is ED prefixed
       break;
@@ -41,11 +43,26 @@ void Z80::Tick(){
       // is FD prefixed
       break;
     default:
+      // does not have a prefix
       TickNoPrefix(byte1);
   }
 }
 
+void Z80::TickCBPrefix(std::uint8_t opcode){
+  using trpp::instructions::CBenums;
+  CBenums instruction = (*(pCBTable))[opcode];
+  assert(instruction != CBenums::undefined);
+  switch(instruction){
+    case CBenums::undefined:
+      throw std::runtime_error{
+        std::format("Error::Opcode::{0}::UNKNOWN", opcode)
+      };
+  }
+}
+
 void Z80::TickNoPrefix(std::uint8_t opcode){
+  using trpp::instructions::enums;
+  enums instruction = (*(pNoPrefixTable))[opcode];
   switch(opcode){
     case 0x00:
       NOP();
@@ -57,6 +74,11 @@ void Z80::TickNoPrefix(std::uint8_t opcode){
     }
     case 0x02: {
       break;
+    }
+    case enums::Undefined: {
+      throw std::runtime_error{
+        std::format("Error::Opcode::{0}::UNKNOWN", opcode)
+      };
     }
     default:
       throw std::runtime_error{

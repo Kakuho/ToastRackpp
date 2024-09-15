@@ -11,13 +11,15 @@
 #include <iomanip>
 #include <bitset>
 
-namespace trpp{
+namespace Trpp::Loader{
 
 class BaseLoader{
   public:
     BaseLoader(std::string&& filename)
-      : m_filename{std::move(filename)},
-        m_index{0}{
+      : 
+        m_index{0},
+        m_filename{std::move(filename)}
+    {
       LoadFile();
     }
 

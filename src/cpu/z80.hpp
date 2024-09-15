@@ -13,14 +13,12 @@
 #include <memory>
 #include <format>
 
+#include "../utils.hpp"
 #include "z80registers.hpp"
 #include "cpulogger.hpp"
-#include "shared/zxmemory.hpp"
-#include "../utils.hpp"
-
-// tables
 #include "instruction_tables/noprefix_table.hpp"
 #include "instruction_tables/cb_table.hpp"
+#include "shared/zxmemory.hpp"
 
 namespace trpp{
 
@@ -52,10 +50,13 @@ class Z80{
     static constexpr std::uint8_t maskQ = 0b0000'1000;
 
     //-------------------------------------------------------------
-    //  Cpu Driver function
+    //  Cpu Driver function:
+    //    My cpu is a instruction stepped interpreter
     //-------------------------------------------------------------
 
+    struct DecodeError{};
     void Tick();
+    void TickCBPrefix(std::uint8_t opcode);
     void TickNoPrefix(std::uint8_t opcode);
     std::uint8_t FetchNN();
 
@@ -79,8 +80,12 @@ class Z80{
     std::uint8_t StackPopByte();
 
   protected:
+    //-------------------------------------------------------------
+    // Internal Data Representation
+    //-------------------------------------------------------------
+
     // allow derived classes do whatever they want with these,
-    // but do not allow users access
+    // but do not allow outside access
     
     Z80RegisterSet m_regs;
     ZxMemory* m_memory; 

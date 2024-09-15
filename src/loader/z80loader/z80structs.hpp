@@ -1,7 +1,9 @@
 #ifndef Z80STRUCTS_HPP
 #define Z80STRUCTS_HPP
 
-// convenient sructs for .z80 file loading
+//  Convenient sructs for .z80 file loading
+//  
+//  Reference: https://worldofspectrum.org/faq/reference/z80format.htm
 
 #include <string>
 #include <cstdint>
@@ -10,9 +12,9 @@
 #include <cassert>
 #include <vector>
 
-#include "baseLoader.hpp"
+#include "./../baseLoader.hpp"
 
-namespace trpp{
+namespace Trpp::Loader{
 
 // these two enums are for system state - probably should be moved within system
 enum class BorderColor : std::uint8_t{

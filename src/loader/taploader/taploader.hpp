@@ -12,9 +12,9 @@
 #include <iomanip>
 #include <bitset>
 
-#include "baseLoader.hpp"
+#include "./../baseLoader.hpp"
 
-namespace trpp{
+namespace Trpp::Loader{
 
 class TapLoader : public BaseLoader{
   public:
