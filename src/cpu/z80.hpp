@@ -22,7 +22,11 @@
 
 namespace trpp{
 
+class Z80Bridge;
+
 class Z80{
+  friend class Z80Bridge;
+  enum class InterruptMode{mode0, mode1, mode2};
   public:
     //-------------------------------------------------------------
     // lifetime
@@ -31,40 +35,6 @@ class Z80{
     explicit Z80();
     virtual ~Z80() = default;
     void ConnectMemory(ZxMemory* memory){ m_memory = memory;}
-
-    //-------------------------------------------------------------
-    // Instruction Tables
-    //-------------------------------------------------------------
-
-    std::unique_ptr<instructions::NoPrefixTable> pNoPrefixTable;
-    std::unique_ptr<instructions::CBTable> pCBTable;
-
-    //-------------------------------------------------------------
-    // Masks useful for decoding instructions
-    //-------------------------------------------------------------
-
-    static constexpr std::uint8_t maskX = 0b1100'0000;
-    static constexpr std::uint8_t maskY = 0b0011'1000;
-    static constexpr std::uint8_t maskZ = 0b0000'0111;
-    static constexpr std::uint8_t maskP = 0b0011'0000;
-    static constexpr std::uint8_t maskQ = 0b0000'1000;
-
-    //-------------------------------------------------------------
-    //  Cpu Driver function:
-    //    My cpu is a instruction stepped interpreter
-    //-------------------------------------------------------------
-
-    struct DecodeError{};
-    void Tick();
-    void TickCBPrefix(std::uint8_t opcode);
-    void TickNoPrefix(std::uint8_t opcode);
-    std::uint8_t FetchNN();
-
-    void Fetch();
-    void Decode();
-    void Execute();
-
-    enum class InterruptMode{mode0, mode1, mode2};
 
     //-------------------------------------------------------------
     // Memory functions

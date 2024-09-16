@@ -10,85 +10,12 @@ namespace trpp{
 //-------------------------------------------------------------
 
 Z80::Z80():
-  pNoPrefixTable{std::make_unique<instructions::NoPrefixTable>()},
-  pCBTable{std::make_unique<instructions::CBTable>()},
   m_regs{},
   m_iff1{false},
   m_iff2{false},
   m_nmi{false},
   m_imode{InterruptMode::mode0}
 {
-
-}
-
-//-------------------------------------------------------------
-//  Cpu Driver function
-//-------------------------------------------------------------
-
-void Z80::Tick(){
-  // instruction stepped interpreter
-  std::uint8_t byte1 = (*(m_memory))[m_regs.pc];
-  m_regs.pc = m_regs.pc + 1;
-  switch(byte1){
-    case 0xCD:
-      // is CD prefixed
-      break;
-    case 0xED:
-      // is ED prefixed
-      break;
-    case 0xDD:
-      // is DD prefixed
-      break;
-    case 0xFD:
-      // is FD prefixed
-      break;
-    default:
-      // does not have a prefix
-      TickNoPrefix(byte1);
-  }
-}
-
-void Z80::TickCBPrefix(std::uint8_t opcode){
-  using trpp::instructions::CBenums;
-  CBenums instruction = (*(pCBTable))[opcode];
-  assert(instruction != CBenums::undefined);
-  switch(instruction){
-    case CBenums::undefined:
-      throw std::runtime_error{
-        std::format("Error::Opcode::{0}::UNKNOWN", opcode)
-      };
-  }
-}
-
-void Z80::TickNoPrefix(std::uint8_t opcode){
-  using trpp::instructions::enums;
-  enums instruction = (*(pNoPrefixTable))[opcode];
-  switch(opcode){
-    case 0x00:
-      NOP();
-      return;
-    case 0x01: {
-      std::uint8_t nn = (*(m_memory))[m_regs.pc];
-      LD_r_n(opcode & maskP, nn);
-      return;
-    }
-    case 0x02: {
-      break;
-    }
-    case enums::Undefined: {
-      throw std::runtime_error{
-        std::format("Error::Opcode::{0}::UNKNOWN", opcode)
-      };
-    }
-    default:
-      throw std::runtime_error{
-        std::format("Error::Opcode::{0}::UNKNOWN", opcode)
-      };
-      break;
-  }
-}
-
-void Z80::Decode(){
 
 }
 
