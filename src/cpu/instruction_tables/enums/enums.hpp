@@ -30,7 +30,7 @@ namespace trpp::instructions{
 enum class enums{
   Undefined,
 
-  // 8 bit Loads
+  // 8 bitLoads
   LD_r_r,
   LD_r_n,
   LD_r_hl,

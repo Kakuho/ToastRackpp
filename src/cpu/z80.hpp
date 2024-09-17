@@ -26,8 +26,8 @@ class Z80Bridge;
 
 class Z80{
   friend class Z80Bridge;
-  enum class InterruptMode{mode0, mode1, mode2};
   public:
+    enum class InterruptMode{mode0, mode1, mode2};
     //-------------------------------------------------------------
     // lifetime
     //-------------------------------------------------------------
@@ -44,6 +44,7 @@ class Z80{
     constexpr std::uint8_t GetByte(std::uint16_t address) const;
     constexpr void SetByte(std::uint16_t address, std::uint8_t value);
     constexpr std::uint16_t formWord(std::uint8_t high, std::uint8_t low) const;
+    constexpr std::uint16_t ReadWord(std::uint16_t address) const;
 
     // stack functions
     void PushByte(std::uint8_t byte);
@@ -58,6 +59,7 @@ class Z80{
     // but do not allow outside access
     
     Z80RegisterSet m_regs;
+    std::uint8_t m_lastRead;
     ZxMemory* m_memory; 
 
     // interrupts
@@ -65,6 +67,7 @@ class Z80{
     bool m_iff1;
     bool m_iff2;
     bool m_nmi;
+    bool m_int;
     InterruptMode m_imode;
 
     //-------------------------------------------------------------
