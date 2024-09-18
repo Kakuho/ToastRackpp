@@ -22,7 +22,7 @@ void NoPrefixTable::SetEntries() noexcept{
 // Operator Overloads
 //-------------------------------------------------------------
 
-[[nodiscard]] constexpr const enums& 
+[[nodiscard]] enums 
 NoPrefixTable::operator[](std::size_t index) const{
   assert(index < TABLE_SIZE);
   return m_buffer[index];

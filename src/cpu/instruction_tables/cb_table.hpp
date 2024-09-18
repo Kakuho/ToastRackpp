@@ -22,6 +22,8 @@ class CBTable{
     //-------------------------------------------------------------
 
     CBTable();
+    ~CBTable() = default;
+
     //  only allow default initialisation
     CBTable(const CBTable& src) = delete;
     CBTable& operator==(const CBTable& src) = delete;
@@ -33,8 +35,7 @@ class CBTable{
     //-------------------------------------------------------------
   
     //  provide read-only lookup semantics
-    [[nodiscard]] CBenums operator[](std::size_t index) const ;
-
+    [[nodiscard]] CBenums operator[](std::size_t index) const;
 
   private:
     //-------------------------------------------------------------

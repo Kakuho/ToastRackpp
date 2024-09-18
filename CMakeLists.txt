@@ -12,11 +12,15 @@ include_directories(src)
 set(CXX_SRCS 
       # Z80 Cpu
       src/cpu/z80.cpp 
+      src/cpu/z80bridge.cpp 
       src/cpu/z80registers.cpp 
       src/cpu/debugz80.cpp
       # Instruction Tables
       src/cpu/instruction_tables/cb_table.cpp
       src/cpu/instruction_tables/noprefix_table.cpp
+
+      # 48k
+      src/48k/zxmemory48k.cpp
 
       # File loaders
       src/loader/baseLoader.cpp 
@@ -26,7 +30,7 @@ set(CXX_SRCS
 
 add_executable(toastrack src/main.cpp ${CXX_SRCS})
 
-target_compile_features(toastrack PUBLIC cxx_std_20)
+target_compile_options(toastrack PRIVATE -g -std=c++20)
 
 set_target_properties(toastrack PROPERTIES CXX_EXTENSIONS OFF)
 
@@ -41,6 +45,9 @@ set_target_properties(toastrack PROPERTIES CXX_EXTENSIONS OFF)
 find_package(Catch2 3 REQUIRED)
 
 set(TEST_SRCS 
+        # cpu tests
+        tests/cpu/general.cpp
+        tests/cpu/registerdecoding.cpp
         # 8 bit tests
         tests/cpu/8bitload/ld_r_r.cpp 
         tests/cpu/8bitload/ld_r_n.cpp
@@ -48,8 +55,11 @@ set(TEST_SRCS
         tests/cpu/8bitload/ld_r_idx.cpp
         tests/cpu/8bitload/ld_hl_r.cpp
         tests/cpu/8bitload/ld_hl_n.cpp
-        tests/cpu/registerdecoding.cpp
-        tests/cpu/general.cpp
+        # bridge
+        tests/cpu/bridge/bridge.cpp
+
+        # memory tests
+        tests/memory/48kmemory.cpp
    )
 
 add_executable(tests ${TEST_SRCS} ${CXX_SRCS})

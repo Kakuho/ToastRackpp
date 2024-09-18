@@ -1,6 +1,8 @@
 #include "z80bridge.hpp"
+#include "cpu/instruction_tables/cb_table.hpp"
 #include "cpu/instruction_tables/enums/cbenums.hpp"
 #include "cpu/instruction_tables/enums/enums.hpp"
+#include "cpu/instruction_tables/noprefix_table.hpp"
 #include <memory>
 
 namespace trpp{
@@ -8,10 +10,12 @@ namespace trpp{
 //  Lifetime 
 //-------------------------------------------------------------
 
-Z80Bridge::Z80Bridge(ZxMemory* memory)
+Z80Bridge::Z80Bridge(Z80* cpu, ZxMemory* memory)
   :
-    m_cpu{std::make_unique<Z80>()},
-    m_memory{memory}
+    m_cpu{cpu},
+    m_memory{memory},
+    pTable{std::make_unique<instructions::NoPrefixTable>()},
+    pCBTable{std::make_unique<instructions::CBTable>()}
 {
   m_cpu->ConnectMemory(m_memory);
 }

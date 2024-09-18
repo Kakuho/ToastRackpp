@@ -23,7 +23,8 @@ class Z80Bridge{
     //  Lifetime
     //-------------------------------------------------------------
 
-    Z80Bridge(ZxMemory* memory);
+    explicit Z80Bridge(ZxMemory* memory);
+    explicit Z80Bridge(Z80* cpu, ZxMemory* memory);
 
     // ------------------------------------------------------ //
     //  Interface with registers
@@ -99,7 +100,7 @@ class Z80Bridge{
 
   private:
     // internal data representation
-    std::unique_ptr<Z80> m_cpu;
+    Z80* m_cpu;
     ZxMemory* m_memory;
 
     // instruction tables

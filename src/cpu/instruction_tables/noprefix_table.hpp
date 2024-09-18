@@ -25,8 +25,9 @@ class NoPrefixTable{
     // lifetime
     //-------------------------------------------------------------
 
-    // only provide construction semantics, no copying / moving
+    // only provide construction semantics
     NoPrefixTable();
+    // no copying or moving
     NoPrefixTable(const NoPrefixTable& src) = delete;
     NoPrefixTable& operator==(NoPrefixTable& src) = delete;
     NoPrefixTable(NoPrefixTable&& src) = delete;
@@ -45,7 +46,8 @@ class NoPrefixTable{
     //-------------------------------------------------------------
 
     // provide look up semantics
-    [[nodiscard]] constexpr const enums& operator[](std::size_t index) const; 
+    [[nodiscard]] enums 
+    operator[](std::size_t index) const;
 
   private:
     std::array<enums, TABLE_SIZE> m_buffer;

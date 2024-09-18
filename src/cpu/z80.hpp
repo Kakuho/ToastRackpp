@@ -44,7 +44,8 @@ class Z80{
     constexpr std::uint8_t GetByte(std::uint16_t address) const;
     constexpr void SetByte(std::uint16_t address, std::uint8_t value);
     constexpr std::uint16_t formWord(std::uint8_t high, std::uint8_t low) const;
-    constexpr std::uint16_t ReadWord(std::uint16_t address) const;
+    std::uint16_t ReadWord(std::uint16_t address) const;
+    std::uint16_t ReadWord(std::uint16_t address);
 
     // stack functions
     void PushByte(std::uint8_t byte);

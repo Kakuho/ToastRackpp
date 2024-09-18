@@ -17,7 +17,7 @@ Z80::Z80():
   m_nmi{false},
   m_imode{InterruptMode::mode0}
 {
-
+  m_regs.pc = 0;
 }
 
 //-------------------------------------------------------------
@@ -41,7 +41,13 @@ Z80::formWord(std::uint8_t high, std::uint8_t low) const{
   return (static_cast<std::uint16_t>(high) << 8) | low;
 }
 
-constexpr std::uint16_t Z80::ReadWord(std::uint16_t address) const{
+std::uint16_t Z80::ReadWord(std::uint16_t address) const{
+  std::uint8_t high = GetByte(address);
+  std::uint8_t low = GetByte(address + 1);
+  return formWord(high, low);
+}
+
+std::uint16_t Z80::ReadWord(std::uint16_t address){
   std::uint8_t high = GetByte(address);
   std::uint8_t low = GetByte(address + 1);
   return formWord(high, low);
