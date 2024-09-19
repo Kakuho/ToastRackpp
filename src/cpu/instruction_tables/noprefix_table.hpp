@@ -36,9 +36,20 @@ class NoPrefixTable{
   private:
     //-------------------------------------------------------------
     // Private Initialisation routine
+    //    populates the table with the required instructions
     //-------------------------------------------------------------
 
     void SetEntries() noexcept;
+
+    void Set8BitLoadGroup() noexcept;
+    void Set16BitLoadGroup() noexcept;
+    void SetExchangeGroup() noexcept;
+    void Set8bitAluGroup() noexcept;
+    void SetGeneralGroup() noexcept;
+    void Set16bitAluGroup() noexcept;
+    void SetRotateShiftGroup() noexcept;
+    void SetJumpGroup() noexcept;
+    void SetCallReturnGroup() noexcept;
 
   public:
     //-------------------------------------------------------------

@@ -1,11 +1,12 @@
-#ifndef I_CB_ENUMS_HPP
-#define I_CB_ENUMS_HPP
+#ifndef I_ENUMS_HPP
+#define I_ENUMS_HPP
 
-// Enums for instructions prefixed with byte CB
+// Enums for Instructions with no Prefix
 //
-// Reference:
+// Reference: 
 //
 // NOTATION:
+//
 //    r - 8-bit reg A, B, C, D, E, H, or L
 //    n - 1 byte unsigned 
 //    nn - 2 byte unsigned
@@ -26,43 +27,61 @@
 
 namespace trpp::instructions{
 
-enum class CBenums{
-  undefined,
+enum class EDEnums{
+  Undefined,
 
-  // rotate group
+  // 8-bit loads
+  LD_a_i,
+  LD_a_r,
+  LD_i_a,
+  LD_r_a,
 
-  RLC_r,
-  RLC_hl,
+  // 16-bit loads
+  LD_dd_nn,
+  LD_nn_dd,
 
-  RL_r,
-  RL_hl,
+  // Exchange group
+  LDI,
+  LDIR,
 
-  RRC_r,
-  RRC_hl,
+  LDD,
+  LDDR,
 
-  RR_r,
-  RR_hl,
+  CPI,
+  CPIR,
 
-  SLA_r,
-  SLA_hl,
+  CPD,
+  CPDR,
 
-  SRA_r,
-  SRA_hl,
+  // General group
+  NEG,
+  IM0,
+  IM1,
+  IM2,
 
-  SRL_r,
-  SRL_hl,
-  
-  // bit set group
+  // 16-bit arithmetic
+  ADC_hl_ss,
+  SBC_hl_ss,
 
-  BIT_b_r,
-  BIT_b_hl,
+  // Rotate Shift Group
+  RLD,
+  RRD,
 
-  SET_b_r,
-  SET_b_hl,
+  // Call Return Group
+  RETI,
+  RETN,
 
-  RES_b_r,
-  RES_b_hl,
-
+  // Input Output Group
+  IN_r_c,
+  INI,
+  INIR,
+  IND,
+  INDR,
+  OUT_c_r,
+  OUTI,
+  OTIR,
+  OUTD,
+  OTDR,
 };
 
 } // namespace trpp::instructions

@@ -61,25 +61,43 @@ enum class enums{
   ADD_a_r,
   ADD_a_n,
   ADD_a_hl,
+
   ADC_a_r,
   ADC_a_n,
   ADC_a_hl,
+
   SUB_a_r,
   SUB_a_n,
   SUB_a_hl,
+
   SBC_a_r,
   SBC_a_n,
   SBC_a_hl,
-    /* TODO: ANDS */
-    /* TODO: ORS */
+
+  AND_a_r,
+  AND_a_n,
+  AND_a_hl,
+
+  OR_a_r,
+  OR_a_n,
+  OR_a_hl,
+
   XOR_a_r,
   XOR_a_n,
   XOR_a_hl,
-    /* TODO: CPs */
+
+  CP_a_r,
+  CP_a_n,
+  CP_a_hl,
+
   INC_r,
   INC_hl,
+
   DEC_r,
   DEC_hl,
+
+  // 16-bit alu
+  // TODO
 
   // General
   DAA,
@@ -91,8 +109,18 @@ enum class enums{
   DI,
   EI,
 
+  // 16 bit arithmetic
+
+  ADD_hl_ss,
+  INC_ss,
+  DEC_ss,
+
   // Rotates
-  // TODO
+
+  RLCA,
+  RLA,
+  RRCA,
+  RRA,
 
   // Jumps
   JP_nn,
@@ -102,6 +130,7 @@ enum class enums{
   JR_nc_e,
   JR_z_e,
   JR_nz_e,
+  JP_hl,
   DJNZ_e,
 
   // Call Return
@@ -109,11 +138,10 @@ enum class enums{
   CALL_cc_nn,
   RET,
   RET_cc,
-  RST         
+  RST,     
 
   // IO group
-  // TODO
-
+  OUT_n_a
 };
 
 } // namespace trpp::instructions
