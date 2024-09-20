@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <cassert>
 
-#include "enums/enums.hpp"
+#include "./../enums/enums.hpp"
 
 namespace trpp::instructions{
 

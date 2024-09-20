@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <cassert>
 
-#include "enums/cbenums.hpp"
+#include "./../enums/cb_enums.hpp"
 
 namespace trpp::instructions{
 
