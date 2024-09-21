@@ -11,9 +11,8 @@ namespace integ{
   inline IJob testBridge{"test bridge", 
     [](){
       using namespace trpp;
-      trpp::DebugZ80 cpu;
       trpp::ZxMemory48K mem{0x11, 0x12, 0x13, 0x14};
-      trpp::Z80Bridge bridge{&cpu, &mem};
+      trpp::Z80Bridge bridge{&mem};
       bridge.Step();
     }
   };

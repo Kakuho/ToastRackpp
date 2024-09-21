@@ -16,8 +16,6 @@
 #include "../utils.hpp"
 #include "z80registers.hpp"
 #include "cpulogger.hpp"
-#include "instruction_tables/noprefix_table.hpp"
-#include "instruction_tables/cb_table.hpp"
 #include "shared/zxmemory.hpp"
 
 namespace trpp{

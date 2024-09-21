@@ -16,8 +16,8 @@ set(CXX_SRCS
       src/cpu/z80registers.cpp 
       src/cpu/debugz80.cpp
       # Instruction Tables
-      src/cpu/instruction_tables/cb_table.cpp
-      src/cpu/instruction_tables/noprefix_table.cpp
+      src/cpu/tables/instructions/noprefix_table.cpp
+      src/cpu/tables/instructions/cb_table.cpp
 
       # 48k
       src/48k/zxmemory48k.cpp

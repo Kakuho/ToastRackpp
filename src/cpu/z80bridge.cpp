@@ -1,20 +1,18 @@
 #include "z80bridge.hpp"
-#include "cpu/instruction_tables/cb_table.hpp"
-#include "cpu/instruction_tables/enums/cbenums.hpp"
-#include "cpu/instruction_tables/enums/enums.hpp"
-#include "cpu/instruction_tables/noprefix_table.hpp"
+#include <cstdint>
 #include <memory>
+#include <stdexcept>
 
 namespace trpp{
 //-------------------------------------------------------------
 //  Lifetime 
 //-------------------------------------------------------------
 
-Z80Bridge::Z80Bridge(Z80* cpu, ZxMemory* memory)
+Z80Bridge::Z80Bridge(ZxMemory* memory)
   :
-    m_cpu{cpu},
+    m_cpu   {std::make_unique<DebugZ80>()},
     m_memory{memory},
-    pTable{std::make_unique<instructions::NoPrefixTable>()},
+    pTable  {std::make_unique<instructions::NoPrefixTable>()},
     pCBTable{std::make_unique<instructions::CBTable>()}
 {
   m_cpu->ConnectMemory(m_memory);
@@ -34,28 +32,52 @@ void Z80Bridge::Step(){
     INT() = false;
     HandleInterrupt();
   }
-  std::uint8_t byteInitial = NextByteInc();
-  switch(byteInitial){
+  std::uint8_t firstByte = NextByteInc();
+  switch(firstByte){
     case 0xCB:
     {
       // prefixed with CB
       std::uint8_t opcodeByte = NextByteInc();
-      StepCBPrefix(opcodeByte);
+      StepCB(opcodeByte);
       break;
     }
     case 0xED:
+    {
       // is ED prefixed
+      std::uint8_t opcodeByte = NextByteInc();
+      StepED(opcodeByte);
       break;
+    }
     case 0xDD:
+    {
       // is DD prefixed
+      std::uint8_t secondByte = NextByteInc();
+      if(secondByte == 0xCB){
+        std::uint8_t opcode = NextByteInc();
+        StepDDCB(opcode);
+      }
+      else{
+        StepDD(secondByte);
+      }
       break;
+    }
     case 0xFD:
+    {
       // is FD prefixed
+      std::uint8_t secondByte = NextByteInc();
+      if(secondByte == 0xCB){
+        std::uint8_t opcode = NextByteInc();
+        StepFDCB(opcode);
+      }
+      else{
+        StepFD(secondByte);
+      }
       break;
+    }
     default:
     {
       // does not have a prefix
-      StepNoPrefix(byteInitial);
+      StepNoPrefix(firstByte);
       break;
     }
   }
@@ -66,12 +88,18 @@ void Z80Bridge::Step(){
 // ------------------------------------------------------ //
 
 // CB PREFIX
+// ------------------------------------------------------ //
 
-void Z80Bridge::StepCBPrefix(std::uint8_t opcode){
+void Z80Bridge::StepCB(std::uint8_t opcode){
   using trpp::instructions::CBenums;
   CBenums instruction = (*(pCBTable))[opcode];
+  throw std::runtime_error{
+        std::format("Error::StepCB::Unimplemented")
+  };
   switch(instruction){
     case CBenums::undefined:
+      [[fallthrough]];
+    default:
     {
       throw std::runtime_error{
         std::format("Error::Opcode::{0}::UNKNOWN", opcode)
@@ -80,7 +108,47 @@ void Z80Bridge::StepCBPrefix(std::uint8_t opcode){
   }
 }
 
+// ED PREFIX
+// ------------------------------------------------------ //
+
+void Z80Bridge::StepED(std::uint8_t opcode){
+  throw std::runtime_error{
+        std::format("Error::StepED::Unimplemented")
+  };
+}
+
+// DD PREFIX
+// ------------------------------------------------------ //
+
+void Z80Bridge::StepDD(std::uint8_t opcode){
+  throw std::runtime_error{
+        std::format("Error::StepDD::Unimplemented")
+  };
+}
+
+void Z80Bridge::StepDDCB(std::uint8_t opcode){
+  throw std::runtime_error{
+        std::format("Error::StepDDCB::Unimplemented")
+  };
+}
+
+// FD PREFIX
+// ------------------------------------------------------ //
+
+void Z80Bridge::StepFD(std::uint8_t opcode){
+  throw std::runtime_error{
+        std::format("Error::StepFD::Unimplemented")
+  };
+}
+
+void Z80Bridge::StepFDCB(std::uint8_t opcode){
+  throw std::runtime_error{
+        std::format("Error::StepFDCB::Unimplemented")
+  };
+}
+
 // NO PREFIX
+// ------------------------------------------------------ //
 
 void Z80Bridge::StepNoPrefix(std::uint8_t opcode){
   using trpp::instructions::enums;
@@ -175,6 +243,11 @@ void Z80Bridge::StepNoPrefix(std::uint8_t opcode){
       m_cpu->NOP();
       return;
     }
+
+    // ------------------------------------------------------ //
+    //  Error in decoding
+    // ------------------------------------------------------ //
+
     case enums::Undefined:
       [[fallthrough]];
     default:{

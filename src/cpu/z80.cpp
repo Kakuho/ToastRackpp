@@ -1,8 +1,4 @@
 #include "z80.hpp"
-#include "cpu/instruction_tables/enums/cbenums.hpp"
-#include <cstdint>
-#include <memory>
-#include <stdexcept>
 
 namespace trpp{
 
@@ -286,7 +282,9 @@ void Z80::LD_a_i(){
   ClearHalfCarry(FlagRegister::f1);
   ClearAddSubtract(FlagRegister::f1);
   throw 
-    std::runtime_error{"If a interrupt occurs during execution of this, p/v=0"};
+    std::runtime_error{
+      "If a interrupt occurs during execution of this, p/v=0"
+    };
 }
 
 void Z80::LD_a_r(){

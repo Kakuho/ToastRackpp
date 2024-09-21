@@ -5,12 +5,21 @@
 // connections to the other emulated systems
 //
 // the cpu core functionalities is within class Z80
+//
+// NOTE: The cpu it uses is a DebugZ80! this is so we can check its 
+//       internal state.
+//       It should be easy to replace it for a Z80 later on.
+//
+//       (Maybe it's better to create a friend observer class instead 
+//       of needing to plug in and out via source code modification?)
 
 #include <memory>
 
-#include "cpu/instruction_tables/enums/cbenums.hpp"
-#include "cpu/instruction_tables/enums/enums.hpp"
-#include "z80.hpp"
+#include "cpu/tables/enums/cb_enums.hpp"
+#include "cpu/tables/enums/enums.hpp"
+#include "cpu/tables/instructions/cb_table.hpp"
+#include "cpu/tables/instructions/noprefix_table.hpp"
+#include "debugz80.hpp"
 #include "shared/zxmemory.hpp"
 
 namespace trpp{
@@ -24,7 +33,6 @@ class Z80Bridge{
     //-------------------------------------------------------------
 
     explicit Z80Bridge(ZxMemory* memory);
-    explicit Z80Bridge(Z80* cpu, ZxMemory* memory);
 
     // ------------------------------------------------------ //
     //  Interface with registers
@@ -86,9 +94,13 @@ class Z80Bridge{
 
   private:
     // these are helper functions for Tick()
-    void StepCBPrefix(std::uint8_t opcode);
+    void StepCB(std::uint8_t opcode);
+    void StepED(std::uint8_t opcode);
+    void StepDD(std::uint8_t opcode);
+    void StepDDCB(std::uint8_t opcode);
+    void StepFD(std::uint8_t opcode);
+    void StepFDCB(std::uint8_t opcode);
     void StepNoPrefix(std::uint8_t opcode);
-
   public:
     // ------------------------------------------------------ //
     // Interrupt behavioural code
@@ -100,7 +112,7 @@ class Z80Bridge{
 
   private:
     // internal data representation
-    Z80* m_cpu;
+    std::unique_ptr<DebugZ80> m_cpu;
     ZxMemory* m_memory;
 
     // instruction tables
