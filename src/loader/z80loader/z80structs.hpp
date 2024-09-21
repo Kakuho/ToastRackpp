@@ -4,6 +4,10 @@
 //  Convenient sructs for .z80 file loading
 //  
 //  Reference: https://worldofspectrum.org/faq/reference/z80format.htm
+//
+//  "Version 2 and 3 .z80 files start with the same 30 byte header as version 1 files. 
+//  However, bit 4 and 5 of the flag byte have no meaning anymore, 
+//  and the program counter (byte 6 and 7) is zero to signal a version 2 or 3 file"
 
 #include <string>
 #include <cstdint>
@@ -36,6 +40,7 @@ enum class InterruptMode{
 
 // structs used to capture / store header of z80 files
 
+// This is shared between all versions
 struct Z80FileHeader{
   std::uint8_t regA;
   std::uint8_t regF;

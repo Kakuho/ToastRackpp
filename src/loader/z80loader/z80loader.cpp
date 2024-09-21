@@ -19,6 +19,42 @@ Z80Loader::Z80Loader(std::string&& filename):
 
 }
 
+void Z80Loader::CheckFileName() const {
+  
+}
+
+//-------------------------------------------------------------
+//  System Integration Functions
+//-------------------------------------------------------------
+
+void Z80Loader::Load(trpp::ZxMemory48K& memory) const{
+  if(IsVersion1()){
+    if(ReadByte(12) & 0b100000){
+      EasyDump48k(memory);
+    }
+    else{
+      throw std::runtime_error{"Compressed 48K dump is not implemented"};
+    }
+  }
+  else if(IsVersion2()){
+      throw std::runtime_error{"Version 2 .z80 dump is not implemented"};
+  }
+  else if(IsVersion3()){
+      throw std::runtime_error{"Version 3 .z80 dump is not implemented"};
+  }
+  else{
+      throw std::runtime_error{"Unrecognised .z80 version"};
+  }
+}
+
+void Z80Loader::EasyDump48k(trpp::ZxMemory48K& memory) const{
+  // procedure to dump the entire memory - this is only if uncompressed and easy!
+  // this procedure is to dump .z80 files when no compression is made.
+  for(std::size_t i = 30; i < bytes.size(); i++){
+    memory[i - 30] = bytes[i];
+  }
+}
+
 //-------------------------------------------------------------
 //  Parsing Header Information
 //-------------------------------------------------------------

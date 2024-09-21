@@ -12,6 +12,7 @@
 #include <bitset>
 #include <cassert>
 #include <vector>
+#include <stdexcept>
 
 #include "./../baseLoader.hpp"
 #include "z80structs.hpp"
@@ -45,6 +46,10 @@ class Z80Loader : public BaseLoader{
     Z80Loader(const Z80Loader& src) = delete;
     ~Z80Loader() = default;
 
+  private:
+      void virtual CheckFileName() const override;
+
+  public:
     void testReadWord(){
       std::uint16_t value = ReadWord(8); 
       std::cout << std::bitset<16>(value).to_ulong() << '\n';
@@ -63,10 +68,9 @@ class Z80Loader : public BaseLoader{
     //  System Integration Functions
     //-------------------------------------------------------------
 
-    void EasyDump48k() const{
-      // procedure to dump the entire memory - this is only if uncompressed and easy!
-      throw Unimplemented{};
-    }
+    void Load(trpp::ZxMemory48K& memory) const;
+    void EasyDump48k(trpp::ZxMemory48K& memory) const;
+    void DumpCompressed48k(trpp::ZxMemory48K& memory) const;
 
     //-------------------------------------------------------------
     //  Parsing Header Information
@@ -80,9 +84,13 @@ class Z80Loader : public BaseLoader{
     //  Detection code
     //-------------------------------------------------------------
 
-    bool IsVersion1(){ return m_header.pc != 0; }
-    bool IsVersion2(){ return ReadWord(30) == 30; }
-    bool IsVersion3(){ return (ReadWord(30) == 54) || (ReadWord(30) == 55); }
+    bool IsVersion1() const { return m_header.pc != 0; }
+    bool IsVersion2() const { return ReadWord(30) == 30; }
+    bool IsVersion3() const { return (ReadWord(30) == 54) || (ReadWord(30) == 55); }
+
+    //-------------------------------------------------------------
+    //  Decoding
+    //-------------------------------------------------------------
 
     Ver2SystemType DecodeVer2Model(){ return static_cast<Ver2SystemType>(ReadByte(34)); }
     Ver3SystemType DecodeVer3Model(){ return static_cast<Ver3SystemType>(ReadByte(34)); }
@@ -102,8 +110,7 @@ class Z80Loader : public BaseLoader{
   private:
     const header_type m_header;
     const info_type m_file_info;
-    void virtual CheckFileName() const override{
-  }
+
 };
 
 } // namespace trpp

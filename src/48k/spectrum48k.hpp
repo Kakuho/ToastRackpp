@@ -4,6 +4,7 @@
 // Class to encapuslates the ZX Spectrum 48K system as a whole
 
 #include <memory>
+#include <string>
 
 #include "cpu/z80.hpp"
 #include "cpu/z80bridge.hpp"
@@ -17,7 +18,12 @@ class Spectrum48K{
     // Lifetime
     // ------------------------------------------------------ //
     explicit Spectrum48K();
+    
+    //-------------------------------------------------------------
+    // Operational
+    //-------------------------------------------------------------
 
+    void ReadFile(std::string&& filename);
 
     // ------------------------------------------------------ //
     //  Driving code

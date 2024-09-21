@@ -32,7 +32,7 @@ add_executable(toastrack src/main.cpp ${CXX_SRCS})
 
 target_compile_options(toastrack PRIVATE -g -std=c++20)
 
-set_target_properties(toastrack PROPERTIES CXX_EXTENSIONS OFF)
+#set_target_properties(toastrack PROPERTIES CXX_EXTENSIONS OFF)
 
 #add_custom_command(
 #    TARGET toastrack
