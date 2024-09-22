@@ -38,6 +38,7 @@
 #include <unordered_map>
 #include <vector>
 #include <iostream>
+#include <utility>
 #include <cstdint>
 
 namespace Trpp::Loader{
@@ -50,6 +51,7 @@ namespace Trpp::Loader{
   class Z80Decompressor{
     using PageIndexType = std::uint8_t;
     using DecompressedPage = std::vector<std::uint8_t>;
+    using PayloadType = std::pair<PageIndexType, DecompressedPage>;
     using DecompressedLutType = std::unordered_map<PageIndexType, DecompressedPage>;
 
     public:
@@ -57,7 +59,7 @@ namespace Trpp::Loader{
       //  Lifetime
       //-------------------------------------------------------------
 
-      Z80Decompressor() = default;
+      Z80Decompressor();
 
       //-------------------------------------------------------------
       //  Decompression (we assume ver 2/ ver3)
@@ -65,14 +67,19 @@ namespace Trpp::Loader{
 
       Z80ChunkHeader GetChunkHeader(std::vector<std::uint8_t>& src);
       Z80ChunkHeader GetChunkHeader(std::uint8_t* src);
-      DecompressedPage DecompressChunkV1(std::vector<std::uint8_t>&& src);
-      DecompressedPage DecompressChunkV2(std::vector<std::uint8_t>&& src);
-      DecompressedPage DecompressChunkV2(std::uint8_t* src);
+
+      std::pair<PayloadType, std::size_t> 
+      DecompressChunk(std::vector<std::uint8_t>&& src);
+
+      std::pair<PayloadType, std::size_t>
+      DecompressChunk(std::uint8_t* src);
+
+      DecompressedLutType Decompress(std::vector<std::uint8_t>&& src);
 
     private:
       DecompressedLutType data;
+      std::size_t m_index;
   };
-
 }
 
 #endif

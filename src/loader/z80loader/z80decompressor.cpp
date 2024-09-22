@@ -3,7 +3,19 @@
 namespace Trpp::Loader{
 using PageIndexType = std::uint8_t;
 using DecompressedPage = std::vector<std::uint8_t>;
+using PayloadType = std::pair<PageIndexType, DecompressedPage>;
 using DecompressedLutType = std::unordered_map<PageIndexType, DecompressedPage>;
+
+//-------------------------------------------------------------
+//  Lifetime
+//-------------------------------------------------------------
+
+Z80Decompressor::Z80Decompressor()
+  :
+    m_index{0}
+{
+
+}
 
 //-------------------------------------------------------------
 //  Decompression 
@@ -31,36 +43,9 @@ Z80Decompressor::GetChunkHeader(std::uint8_t* src){
   };
 }
 
-DecompressedPage 
-Z80Decompressor::DecompressChunkV1(std::vector<std::uint8_t>&& chunk){
-  // procedure to decompress 1 single chunk
-  Z80ChunkHeader header = GetChunkHeader(chunk);
-  // decompressed will be our output buffer
-  DecompressedPage decompressed{};
-  decompressed.reserve(header.length);
-  // main decompression loop
-  for(std::size_t i = 3; i < header.length; i++){
-    if(chunk[i] == 0xED && chunk[i+1] == 0xED){
-      std::uint8_t amount = chunk[i+2];
-      std::uint8_t byte = chunk[i+3];
-      decompressed.insert(decompressed.end(), amount, byte);
-      i += 3;
-    }
-    else if(chunk[i] == 0xED && chunk[i+1] != 0xED){
 
-      decompressed.insert(decompressed.end(), {0xED, chunk[i+1]});
-      i += 2;
-    }
-    else{
-      // I dont like this because it may perform a lot of reallocations...
-      decompressed.push_back(chunk[i]);
-    }
-  }
-  return decompressed;
-}
-
-DecompressedPage 
-Z80Decompressor::DecompressChunkV2(std::vector<std::uint8_t>&& chunk){
+std::pair<PayloadType, std::size_t>
+Z80Decompressor::DecompressChunk(std::vector<std::uint8_t>&& chunk){
   // Procedure to decompress 1 single chunk
   // Mayhaps more optimised than v1 since potentially less reallocations, however 
   // both still need to be tested for correctness and profiled for speed
@@ -103,11 +88,11 @@ Z80Decompressor::DecompressChunkV2(std::vector<std::uint8_t>&& chunk){
     decompressed.insert(decompressed.end(), 
         chunk.begin() + startIndex, chunk.begin() + index);
   }
-  return decompressed;
+  return {{header.page, decompressed}, index};
 }
 
-DecompressedPage 
-Z80Decompressor::DecompressChunkV2(std::uint8_t* chunk){
+std::pair<PayloadType, std::size_t>
+Z80Decompressor::DecompressChunk(std::uint8_t* chunk){
   // Procedure to decompress 1 single chunk
   // Mayhaps more optimised than v1 since potentially less reallocations, however 
   // both still need to be tested for correctness and profiled for speed
@@ -150,7 +135,21 @@ Z80Decompressor::DecompressChunkV2(std::uint8_t* chunk){
     decompressed.insert(decompressed.end(), 
         chunk + startIndex, chunk + index);
   }
-  return decompressed;
+  return {{header.page, decompressed}, index};
+}
+
+DecompressedLutType 
+Z80Decompressor::Decompress(std::vector<std::uint8_t>&& src){
+  // src represents something we're reading only from, and should not alter
+  std::size_t index = 0;
+  DecompressedLutType lut{};
+  while(index < src.size()){
+    auto [decompressed, advance] = DecompressChunk(src.data() + index);
+    auto [pageIndex, bytes] = decompressed;
+    index += advance;
+    lut[pageIndex] = bytes;
+  }
+  return lut;
 }
 
 } // namespace Trpp::Loader

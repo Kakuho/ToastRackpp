@@ -68,6 +68,7 @@ set(TEST_SRCS
         tests/loader/tetrisloader.cpp
         tests/loader/z80loader/chunking_vector.cpp
         tests/loader/z80loader/chunking_pointer.cpp
+        tests/loader/z80loader/chunking_big.cpp
    )
 
 add_executable(tests ${TEST_SRCS} ${CXX_SRCS})

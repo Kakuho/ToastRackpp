@@ -10,16 +10,17 @@ TEST_CASE("tests for z80loader memory system", "[chunkpointer]" ) {
   SECTION("chunking test1") {
     Trpp::Loader::Z80Decompressor decomp;
     std::vector<std::uint8_t> memory{
-        0x00, 0x04,
+        0x00, 0x05,
         0x01,
         0xED, 0xED, 0x03, 0xED, 0xAB
     };
     std::vector<std::uint8_t> output = 
-      decomp.DecompressChunkV2(memory.data());
-    REQUIRE(output.size() == 3);
+      decomp.DecompressChunk(memory.data()).first.second;
+    REQUIRE(output.size() == 4);
     REQUIRE(output[0] == 0xED);
     REQUIRE(output[1] == 0xED);
     REQUIRE(output[2] == 0xED);
+    REQUIRE(output[3] == 0xAB);
   }
 
   SECTION("chunking test2 1 compressed block, 0xED 0xAB") {
@@ -33,7 +34,7 @@ TEST_CASE("tests for z80loader memory system", "[chunkpointer]" ) {
         0xED, 0xED, 0x03, 0xED, 0xED, 0xAB
     };
     std::vector<std::uint8_t> output = 
-      decomp.DecompressChunkV2(memory.data());
+      decomp.DecompressChunk(memory.data()).first.second;
     REQUIRE(output.size() == 5);
     REQUIRE(output[0] == 0xED);
     REQUIRE(output[1] == 0xED);
@@ -50,7 +51,7 @@ TEST_CASE("tests for z80loader memory system", "[chunkpointer]" ) {
         0xED, 0xAB, 0xED, 0xED, 0x03, 0xED
     };
     std::vector<std::uint8_t> output = 
-      decomp.DecompressChunkV2(memory.data());
+      decomp.DecompressChunk(memory.data()).first.second;
     REQUIRE(output.size() == 5);
     REQUIRE(output[0] == 0xED);
     REQUIRE(output[1] == 0xAB);
@@ -70,7 +71,7 @@ TEST_CASE("tests for z80loader memory system", "[chunkpointer]" ) {
         0xED, 0xED, 0x03, 0xED, 0xED, 0xED, 0x04, 0xAB
     };
     std::vector<std::uint8_t> output = 
-      decomp.DecompressChunkV2(memory.data());
+      decomp.DecompressChunk(memory.data()).first.second;
     REQUIRE(output.size() == 7);
     REQUIRE(output[0] == 0xED);
     REQUIRE(output[1] == 0xED);
@@ -89,7 +90,7 @@ TEST_CASE("tests for z80loader memory system", "[chunkpointer]" ) {
         0x12, 0x23, 0x34, 0x45, 0x56
     };
     std::vector<std::uint8_t> output = 
-      decomp.DecompressChunkV2(memory.data());
+      decomp.DecompressChunk(memory.data()).first.second;
     REQUIRE(output.size() == 5);
     REQUIRE(output[0] == 0x12);
     REQUIRE(output[1] == 0x23);
