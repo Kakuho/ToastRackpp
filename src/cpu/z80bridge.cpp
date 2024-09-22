@@ -3,7 +3,7 @@
 #include <memory>
 #include <stdexcept>
 
-namespace trpp{
+namespace Trpp::CPU{
 //-------------------------------------------------------------
 //  Lifetime 
 //-------------------------------------------------------------
@@ -12,8 +12,8 @@ Z80Bridge::Z80Bridge(ZxMemory* memory)
   :
     m_cpu   {std::make_unique<DebugZ80>()},
     m_memory{memory},
-    pTable  {std::make_unique<instructions::NoPrefixTable>()},
-    pCBTable{std::make_unique<instructions::CBTable>()}
+    pTable  {std::make_unique<Instructions::NoPrefixTable>()},
+    pCBTable{std::make_unique<Instructions::CBTable>()}
 {
   m_cpu->ConnectMemory(m_memory);
 }
@@ -91,7 +91,6 @@ void Z80Bridge::Step(){
 // ------------------------------------------------------ //
 
 void Z80Bridge::StepCB(std::uint8_t opcode){
-  using trpp::instructions::CBenums;
   CBenums instruction = (*(pCBTable))[opcode];
   throw std::runtime_error{
         std::format("Error::StepCB::Unimplemented")
@@ -151,7 +150,6 @@ void Z80Bridge::StepFDCB(std::uint8_t opcode){
 // ------------------------------------------------------ //
 
 void Z80Bridge::StepNoPrefix(std::uint8_t opcode){
-  using trpp::instructions::enums;
   enums instruction = (*(pTable))[opcode];
   switch(instruction){
     // ------------------------------------------------------ //
@@ -290,4 +288,4 @@ void Z80Bridge::HandleInterrupt(){
   }
 }
 
-}
+} // namespace Trpp::Cpu

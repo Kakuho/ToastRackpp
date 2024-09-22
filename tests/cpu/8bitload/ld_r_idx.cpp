@@ -5,8 +5,8 @@
 
 
 TEST_CASE( "ld_r_ixd (load mem[ix + d] to register) example", "[ld_r_ixd_ex]" ) {
-  trpp::DebugZ80 cpu;
-  trpp::ZxMemory48K mem;
+  Trpp::CPU::DebugZ80 cpu;
+  Trpp::ZxMemory48K mem;
   cpu.ConnectMemory(&mem);
   assert(cpu.RegistersAllZero() == true);
 
@@ -24,8 +24,8 @@ TEST_CASE( "ld_r_ixd (load mem[ix + d] to register) example", "[ld_r_ixd_ex]" ) 
 
 /*
 TEST_CASE( "ld_r_ixd (load mem[ix + d] to register) positive displacement cases ", "[ld_r_ixd_positive]" ) {
-  trpp::DebugZ80 cpu;
-  trpp::ZxMemory48K mem;
+  Trpp::CPU::DebugZ80 cpu;
+  Trpp::ZxMemory48K mem;
   cpu.ConnectMemory(&mem);
   assert(cpu.RegistersAllZero() == true);
 

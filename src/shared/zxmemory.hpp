@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <stdexcept>
 
-namespace trpp{
+namespace Trpp{
 
 class ZxMemory{
   public:

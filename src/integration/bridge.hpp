@@ -6,14 +6,14 @@
 #include "cpu/debugz80.hpp"
 #include "cpu/z80bridge.hpp"
 
-namespace integ{
+namespace Trpp::Integration{
 
   inline IJob testBridge{"test bridge", 
     [](){
-      using namespace trpp;
-      trpp::ZxMemory48K mem{0x11, 0x12, 0x13, 0x14};
-      trpp::Z80Bridge bridge{&mem};
+      ZxMemory48K mem{0x11, 0x12, 0x13, 0x14};
+      CPU::Z80Bridge bridge{&mem};
       bridge.Step();
     }
   };
-}
+
+} // namespace Trpp::Integration

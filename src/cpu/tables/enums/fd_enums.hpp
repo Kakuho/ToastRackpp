@@ -6,7 +6,7 @@
 //
 // Reference: Zilog Z80 Reference
 
-namespace trpp::instructions{
+namespace Trpp::CPU{
 
 enum class DDEnums{
   Undefined,

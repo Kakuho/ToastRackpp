@@ -4,7 +4,7 @@
 #include <string>
 #include <iostream>
 
-namespace integ{
+namespace Trpp::Integration{
 
   template<typename T>
   concept Callable = requires(T a){
@@ -64,6 +64,6 @@ inline void PrintSeparator(){
   std::cout << "\n----------\n";
 }
 
-}; // namespace integ
+}; // namespace Trpp::Integration
 
 #endif

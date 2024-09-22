@@ -5,36 +5,46 @@
 
 #include <memory>
 #include <string>
+#include <stdexcept>
 
+#include "zxmemory48k.hpp"
 #include "cpu/z80.hpp"
 #include "cpu/z80bridge.hpp"
-#include "zxmemory48k.hpp"
+#include "loader/utils.hpp"
+#include "loader/z80loader/z80loader.hpp"
 
-namespace trpp{
+namespace Trpp{
 
 class Spectrum48K{
   public:
     // ------------------------------------------------------ //
     // Lifetime
     // ------------------------------------------------------ //
+
     explicit Spectrum48K();
     
     //-------------------------------------------------------------
-    // Operational
+    //  File Loading Routines
     //-------------------------------------------------------------
 
-    void ReadFile(std::string&& filename);
+    void LoadFile(std::string&& filename);
+
+  private:
+    void LoadZ80();
+    void LoadTap();
 
     // ------------------------------------------------------ //
     //  Driving code
     // ------------------------------------------------------ //
+
     void Run();
 
   private:
     std::unique_ptr<ZxMemory48K> m_memory;
-    std::unique_ptr<Z80Bridge> m_cpuBridge;
+    std::unique_ptr<CPU::Z80Bridge> m_cpuBridge;
+    std::string m_filename;
 };
 
-} // namespace trpp
+} // namespace Trpp
 
 #endif

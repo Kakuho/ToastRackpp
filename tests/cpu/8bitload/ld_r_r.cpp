@@ -4,7 +4,7 @@
 #include "cassert"
 
 TEST_CASE( "ld_r_r cases", "[ld_r_r]" ) {
-  trpp::DebugZ80 cpu;
+  Trpp::CPU::DebugZ80 cpu;
   assert(cpu.RegistersAllZero() == true);
 
   //---------------------------------------------------------------//

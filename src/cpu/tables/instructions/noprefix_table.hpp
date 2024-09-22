@@ -11,7 +11,7 @@
 
 #include "./../enums/enums.hpp"
 
-namespace trpp::instructions{
+namespace Trpp::CPU::Instructions{
 
 class NoPrefixTable{
   public:
@@ -64,6 +64,6 @@ class NoPrefixTable{
     std::array<enums, TABLE_SIZE> m_buffer;
 };
 
-} // namespace trpp::instructions
+} 
 
 #endif

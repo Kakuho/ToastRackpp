@@ -1,4 +1,5 @@
 #include "z80loader.hpp"
+#include "loader/utils.hpp"
 #include <stdexcept>
 
 namespace Trpp::Loader{
@@ -11,23 +12,25 @@ using info_type = Z80FileInfo;
 //  Lifetime
 //-------------------------------------------------------------
 
-Z80Loader::Z80Loader(std::string&& filename): 
-  BaseLoader(std::move(filename)),
-  m_header{GetHeader()},
-  m_file_info{GetFileInfo()}
+Z80Loader::Z80Loader(std::string& filename)
+  :
+    BaseLoader(filename),
+    m_header{GetHeader()},
+    m_file_info{GetFileInfo()}
 {
-
+  CheckFileName();
 }
 
 void Z80Loader::CheckFileName() const {
-  
+  Extension ext = ParseExtension(m_filename);
+  assert(ext == Extension::Z80);
 }
 
 //-------------------------------------------------------------
 //  System Integration Functions
 //-------------------------------------------------------------
 
-void Z80Loader::Load(trpp::ZxMemory48K& memory) const{
+void Z80Loader::Load(ZxMemory48K& memory) const{
   if(IsVersion1()){
     if(ReadByte(12) & 0b100000){
       EasyDump48k(memory);
@@ -47,7 +50,7 @@ void Z80Loader::Load(trpp::ZxMemory48K& memory) const{
   }
 }
 
-void Z80Loader::EasyDump48k(trpp::ZxMemory48K& memory) const{
+void Z80Loader::EasyDump48k(ZxMemory48K& memory) const{
   // procedure to dump the entire memory - this is only if uncompressed and easy!
   // this procedure is to dump .z80 files when no compression is made.
   for(std::size_t i = 30; i < bytes.size(); i++){

@@ -15,10 +15,9 @@
 
 #include "../utils.hpp"
 #include "z80registers.hpp"
-#include "cpulogger.hpp"
 #include "shared/zxmemory.hpp"
 
-namespace trpp{
+namespace Trpp::CPU{
 
 class Z80Bridge;
 
@@ -437,6 +436,6 @@ class Z80{
     // how do we initialise ports ? idk
 };
 
-} // namespace trpp
+} // namespace Trpp::Cpu
 
 #endif

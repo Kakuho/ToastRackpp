@@ -13,7 +13,7 @@
 
 #include "shared/zxmemory.hpp"
 
-namespace trpp{
+namespace Trpp{
 
 class ZxMemory48K final: public ZxMemory{
   public:
@@ -49,6 +49,6 @@ class ZxMemory48K final: public ZxMemory{
     std::array<std::uint8_t, ZxMemory::MEMORYSIZE> m_buffer;
 };
 
-} // namespace trpp
+} // namespace Trpp
 
 #endif

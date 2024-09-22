@@ -24,7 +24,7 @@
 //
 //    dd - BC DE HL SP
 
-namespace trpp::instructions{
+namespace Trpp::CPU{
 
 enum class CBenums{
   undefined,

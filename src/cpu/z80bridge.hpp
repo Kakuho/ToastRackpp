@@ -22,7 +22,7 @@
 #include "debugz80.hpp"
 #include "shared/zxmemory.hpp"
 
-namespace trpp{
+namespace Trpp::CPU{
 
 class Z80Bridge{
   struct DecodeError{};
@@ -116,12 +116,12 @@ class Z80Bridge{
     ZxMemory* m_memory;
 
     // instruction tables
-    std::unique_ptr<instructions::NoPrefixTable> pTable;
-    std::unique_ptr<instructions::CBTable> pCBTable;
+    std::unique_ptr<Instructions::NoPrefixTable> pTable;
+    std::unique_ptr<Instructions::CBTable> pCBTable;
     // cycle tables
 
 };
 
-} // namespace Trpp
+} // namespace Trpp::Cpu
 
 #endif

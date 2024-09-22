@@ -7,5 +7,5 @@
 #include "integration/bridge.hpp"
 
 int main(){
-  integ::testBridge();
+  Trpp::Integration::testBridge();
 }

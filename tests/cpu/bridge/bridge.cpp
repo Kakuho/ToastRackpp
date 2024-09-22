@@ -11,8 +11,8 @@ TEST_CASE( "integration testing the cpu bridge", "[z80bridge]" ) {
   // ------------------------------------------------------ //
 
   // the data
-  trpp::ZxMemory48K mem{0x11, 0x12, 0x13, 0x14};
-  trpp::Z80Bridge bridge{&mem};
+  Trpp::ZxMemory48K mem{0x11, 0x12, 0x13, 0x14};
+  Trpp::CPU::Z80Bridge bridge{&mem};
 
   // ------------------------------------------------------ //
   // Tests

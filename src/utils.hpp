@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace trpp{
+namespace Trpp{
   inline bool DetermineBorrow(bool a, bool b, bool borrowIn){
     // a - b
     return (!a & b) | (!a & borrowIn) | (b & borrowIn) ;

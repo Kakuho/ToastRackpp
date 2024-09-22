@@ -1,6 +1,6 @@
 #include "cb_table.hpp"
 
-namespace trpp::instructions{
+namespace Trpp::CPU::Instructions{
 
 //-------------------------------------------------------------
 // lifetime
@@ -29,4 +29,5 @@ CBTable::operator[](std::size_t index) const {
   return m_buffer[index];
 }
 
-} // namespace trpp::instructions
+} 
+

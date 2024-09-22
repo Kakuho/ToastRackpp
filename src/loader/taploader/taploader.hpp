@@ -12,13 +12,13 @@
 #include <iomanip>
 #include <bitset>
 
-#include "./../baseLoader.hpp"
+#include "loader/baseLoader.hpp"
 
 namespace Trpp::Loader{
 
 class TapLoader : public BaseLoader{
   public:
-  TapLoader(std::string&& filename): BaseLoader(std::move(filename)){
+  TapLoader(std::string& filename): BaseLoader(filename){
   }
 
   void LoadChunk(){
@@ -65,6 +65,6 @@ class TapLoader : public BaseLoader{
   }
 };
 
-} // namespace trpp
+} // namespace Trpp::Loader
 
 #endif

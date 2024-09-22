@@ -7,8 +7,9 @@
 TEST_CASE("tests for 48k memory system", "[z80loader]" ) {
 
   SECTION("test initialisation") {
-    trpp::ZxMemory48K memory;
-    Trpp::Loader::Z80Loader loader{"tetris.z80"};
+    std::string filename = "tetris.z80";
+    Trpp::ZxMemory48K memory;
+    Trpp::Loader::Z80Loader loader{filename};
     loader.Load(memory);
   }
 

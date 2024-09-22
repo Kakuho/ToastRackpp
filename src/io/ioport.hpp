@@ -5,14 +5,13 @@
 
 #include <cstdint>
 
-namespace trpp{
+namespace Trpp::IO{
 
 class IoPort{
-
-  private:
+  public:
     std::uint8_t value;
 };
 
-} // namespace trpp
+} // namespace Trpp::IO
 
 #endif

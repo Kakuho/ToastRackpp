@@ -1,6 +1,6 @@
 #include <cstdint>
 
-namespace trpp{
+namespace Trpp::Loader{
 
 struct Z80FileInfoBitmap{
   // poc for system information being stored on a bitmap

@@ -1,5 +1,5 @@
 #include "debugz80.hpp"
 
-namespace trpp{
+namespace Trpp::CPU{
 
 }

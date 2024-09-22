@@ -1,6 +1,6 @@
 #include "noprefix_table.hpp"
 
-namespace trpp::instructions{
+namespace Trpp::CPU::Instructions{
 
 //-------------------------------------------------------------
 // lifetime

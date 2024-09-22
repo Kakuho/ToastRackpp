@@ -1,11 +1,11 @@
-#ifndef IO_CONSTANTS_HPP
-#define IO_CONSTANTS_HPP
+#ifndef IO_PORT_ADDRESSES_HPP
+#define IO_PORT_ADDRESSES_HPP
 
 // Constants for io ports
 
 #include <cstdint>
 
-namespace trpp::io{
+namespace Trpp::IO{
   // keyboard ports
   inline constexpr std::uint16_t KB_B_SPACE = 0x7FFE;
   inline constexpr std::uint16_t KB_H_ENTER = 0xBFFE;

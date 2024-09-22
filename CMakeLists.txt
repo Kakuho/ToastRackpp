@@ -60,6 +60,10 @@ set(TEST_SRCS
 
         # memory tests
         tests/memory/48kmemory.cpp
+
+        # loader tests
+        tests/loader/parses_extension.cpp
+        tests/loader/tetrisloader.cpp
    )
 
 add_executable(tests ${TEST_SRCS} ${CXX_SRCS})

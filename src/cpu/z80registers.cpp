@@ -1,6 +1,6 @@
 #include "z80registers.hpp"
 
-namespace trpp{
+namespace Trpp::CPU{
 
 Z80RegisterPair& Z80RegisterPair::operator=(Z80RegisterPair& src){ 
   *this = static_cast<std::uint16_t>(src);
@@ -80,4 +80,4 @@ Z80RegisterSet::Z80RegisterSet():
 
 }
 
-} // namespace trpp
+} // namespace Trpp::Cpu

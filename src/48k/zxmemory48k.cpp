@@ -1,6 +1,6 @@
 #include "zxmemory48k.hpp"
 
-namespace trpp{
+namespace Trpp{
 // ------------------------------------------------------ //
 //  Lifetime
 // ------------------------------------------------------ //
@@ -18,4 +18,4 @@ ZxMemory48K::ZxMemory48K(std::initializer_list<std::uint8_t> src){
   }
 }
 
-}
+} // namespace Trpp

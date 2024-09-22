@@ -3,7 +3,7 @@
 #include "48k/zxmemory48k.hpp"
 
 TEST_CASE( "8 bit register table cases", "[register_table]" ) {
-  trpp::DebugZ80 cpu;
+  Trpp::CPU::DebugZ80 cpu;
   assert(cpu.RegistersAllZero() == true);
 
   SECTION( "selects b" ) {
@@ -37,7 +37,7 @@ TEST_CASE( "8 bit register table cases", "[register_table]" ) {
   }
 
   SECTION( "selects (hl)" ) {
-    trpp::ZxMemory48K memory;
+    Trpp::ZxMemory48K memory;
     cpu.ConnectMemory(& memory);
     cpu.registerTable(0b110) = 0x67;
     REQUIRE(memory[cpu.GetHL1()] == 0x67);
@@ -50,7 +50,7 @@ TEST_CASE( "8 bit register table cases", "[register_table]" ) {
 }
 
 TEST_CASE( "16 bit register pair table cases", "[register_table]" ) {
-  trpp::DebugZ80 cpu;
+  Trpp::CPU::DebugZ80 cpu;
   assert(cpu.RegistersAllZero() == true);
 
   SECTION( "selects BC" ) {

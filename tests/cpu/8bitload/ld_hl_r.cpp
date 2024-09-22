@@ -4,8 +4,8 @@
 #include "cassert"
 
 TEST_CASE( "ld_hl_r (load register to mem[hl]) cases (HL = 0x50)", "[ld_hl_r_0x50]" ) {
-  trpp::DebugZ80 cpu;
-  trpp::ZxMemory48K mem;
+  Trpp::CPU::DebugZ80 cpu;
+  Trpp::ZxMemory48K mem;
   cpu.ConnectMemory(&mem);
   assert(cpu.RegistersAllZero() == true);
   cpu.SetHL1(0x50);
@@ -37,8 +37,8 @@ TEST_CASE( "ld_hl_r (load register to mem[hl]) cases (HL = 0x50)", "[ld_hl_r_0x5
 }
 
 TEST_CASE( "ld_hl_r (load register to mem[hl]) cases (HL = 0x90)", "[ld_hl_r_0x90]" ) {
-  trpp::DebugZ80 cpu;
-  trpp::ZxMemory48K mem;
+  Trpp::CPU::DebugZ80 cpu;
+  Trpp::ZxMemory48K mem;
   cpu.ConnectMemory(&mem);
   assert(cpu.RegistersAllZero() == true);
   cpu.SetHL1(0x90);
@@ -70,8 +70,8 @@ TEST_CASE( "ld_hl_r (load register to mem[hl]) cases (HL = 0x90)", "[ld_hl_r_0x9
 }
 
 TEST_CASE( "ld_hl_r (load register to mem[hl]) cases (HL = 0x00)", "[ld_hl_r_0x00]" ) {
-  trpp::DebugZ80 cpu;
-  trpp::ZxMemory48K mem;
+  Trpp::CPU::DebugZ80 cpu;
+  Trpp::ZxMemory48K mem;
   cpu.ConnectMemory(&mem);
   assert(cpu.RegistersAllZero() == true);
   cpu.SetHL1(0x00);
@@ -103,8 +103,8 @@ TEST_CASE( "ld_hl_r (load register to mem[hl]) cases (HL = 0x00)", "[ld_hl_r_0x0
 }
 
 TEST_CASE( "ld_hl_r (load register to mem[hl]) cases (HL = 0xFF)", "[ld_hl_r_0xFF]" ) {
-  trpp::DebugZ80 cpu;
-  trpp::ZxMemory48K mem;
+  Trpp::CPU::DebugZ80 cpu;
+  Trpp::ZxMemory48K mem;
   cpu.ConnectMemory(&mem);
   assert(cpu.RegistersAllZero() == true);
   cpu.SetHL1(0xFF);

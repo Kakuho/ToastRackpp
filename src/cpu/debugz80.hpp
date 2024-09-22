@@ -2,9 +2,8 @@
 #define DEBUGZ80_HPP
 
 #include "z80.hpp"
-#include "cpulogger.hpp"
 
-namespace trpp{
+namespace Trpp::CPU{
 
 class DebugZ80 final: public Z80{
   // the debug class has access to all the state of the processor, and 
@@ -14,7 +13,7 @@ class DebugZ80 final: public Z80{
     virtual ~DebugZ80() override = default;
 
   private:
-    CpuLogger logger;
+    //CpuLogger logger;
   
   public:
     bool RegistersAllZero(){

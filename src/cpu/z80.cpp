@@ -1,6 +1,6 @@
 #include "z80.hpp"
 
-namespace trpp{
+namespace Trpp::CPU{
 
 //-------------------------------------------------------------
 // lifetime
@@ -1668,5 +1668,5 @@ void Z80::RST(std::uint8_t t){
   m_regs.pc = ptable[t];
 }
 
-} // namespace trpp
+} // namespace Trpp::Cpu
 

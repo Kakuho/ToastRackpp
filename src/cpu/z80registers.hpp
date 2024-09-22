@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-namespace trpp{
+namespace Trpp::CPU{
 
 struct Z80RegisterPair{
   public: 
@@ -122,6 +122,6 @@ struct Z80RegisterSet{
     std::uint8_t& l2 = hl2.low; 
 };
 
-}
+} // namespace Trpp::Cpu
 
 #endif

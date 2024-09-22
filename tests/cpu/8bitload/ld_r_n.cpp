@@ -3,7 +3,7 @@
 #include "cassert"
 
 TEST_CASE( "ld_r_n (load immediate to register) cases", "[ld_r_n]" ) {
-  trpp::DebugZ80 cpu;
+  Trpp::CPU::DebugZ80 cpu;
   assert(cpu.RegistersAllZero() == true);
 
   SECTION( "ld_r_n (a, 0x10)" ) {

@@ -7,7 +7,7 @@
 
 #include "./../enums/cb_enums.hpp"
 
-namespace trpp::instructions{
+namespace Trpp::CPU::Instructions{
 
 class CBTable{
   public:
@@ -48,7 +48,6 @@ class CBTable{
     std::array<CBenums, 0xFF> m_buffer;
 };
 
-
-} // namespace trpp::instructions
+} 
 
 #endif

@@ -14,9 +14,10 @@
 #include <vector>
 #include <stdexcept>
 
-#include "./../baseLoader.hpp"
 #include "z80structs.hpp"
 #include "z80enums.hpp"
+#include "loader/baseLoader.hpp"
+#include "loader/utils.hpp"
 #include "48k/zxmemory48k.hpp"
 
 namespace Trpp::Loader{
@@ -41,7 +42,7 @@ class Z80Loader : public BaseLoader{
     // Lifetime
     //-------------------------------------------------------------
 
-    explicit Z80Loader(std::string&& filename);
+    explicit Z80Loader(std::string& filename);
     Z80Loader() = delete;
     Z80Loader(const Z80Loader& src) = delete;
     ~Z80Loader() = default;
@@ -68,9 +69,9 @@ class Z80Loader : public BaseLoader{
     //  System Integration Functions
     //-------------------------------------------------------------
 
-    void Load(trpp::ZxMemory48K& memory) const;
-    void EasyDump48k(trpp::ZxMemory48K& memory) const;
-    void DumpCompressed48k(trpp::ZxMemory48K& memory) const;
+    void Load(ZxMemory48K& memory) const;
+    void EasyDump48k(ZxMemory48K& memory) const;
+    void DumpCompressed48k(ZxMemory48K& memory) const;
 
     //-------------------------------------------------------------
     //  Parsing Header Information
@@ -110,9 +111,8 @@ class Z80Loader : public BaseLoader{
   private:
     const header_type m_header;
     const info_type m_file_info;
-
 };
 
-} // namespace trpp
+} // namespace Trpp::Loader
 
 #endif

@@ -4,8 +4,8 @@
 #include "cassert"
 
 TEST_CASE( "ld_r_hl (load mem[hl] to register) cases", "[ld_r_hl]" ) {
-  trpp::DebugZ80 cpu;
-  trpp::ZxMemory48K mem;
+  Trpp::CPU::DebugZ80 cpu;
+  Trpp::ZxMemory48K mem;
   cpu.ConnectMemory(&mem);
   assert(cpu.RegistersAllZero() == true);
   cpu.SetHL1(0x50);
