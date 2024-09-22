@@ -17,7 +17,7 @@ inline Extension ParseExtension(std::string& filename){
   using enum Extension;
   bool hasdot = false;
   std::string substr;
-  for(std::size_t i = 0; i < filename.size(); i++){
+  for(std::size_t i = filename.size() - 1; i > 0; i--){
     if(filename[i] == '.'){
       substr = filename.substr(i+1, filename.size());
       hasdot = true;

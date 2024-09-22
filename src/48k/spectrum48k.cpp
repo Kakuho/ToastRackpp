@@ -30,7 +30,7 @@ void Spectrum48K::LoadFile(std::string&& filename){
       LoadZ80();
       return;
     case Tap:
-      LoadTap();
+      throw std::runtime_error{"ERROR::LoadFile::Tap file not impl"};
       return;
     case Unknown:
       throw std::runtime_error{"ERROR::LoadFile::Unknown file ext"};
