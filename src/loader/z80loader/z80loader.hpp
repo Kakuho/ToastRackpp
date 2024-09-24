@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <string>
 #include <cstdint>
+#include <cstddef>
 #include <iostream>
 #include <bitset>
 #include <cassert>
@@ -16,6 +17,8 @@
 
 #include "z80structs.hpp"
 #include "z80enums.hpp"
+#include "z80decompressor.hpp"
+#include "decompression.hpp"
 #include "loader/baseLoader.hpp"
 #include "loader/utils.hpp"
 #include "48k/zxmemory48k.hpp"
@@ -56,7 +59,8 @@ class Z80Loader : public BaseLoader{
       std::cout << std::bitset<16>(value).to_ulong() << '\n';
       std::uint8_t byte1 = ReadByte(8);
       std::uint8_t byte2 = ReadByte(9);
-      std::uint16_t word = (static_cast<std::uint16_t>(byte2) << 8) | byte1;
+      std::uint16_t word = 
+        (static_cast<std::uint16_t>(byte2) << 8) | byte1;
       std::uint16_t word2 = ReadWord(8);
       assert(word == 0x6a9a);
       assert(word2 == word);
@@ -69,10 +73,18 @@ class Z80Loader : public BaseLoader{
     //  System Integration Functions
     //-------------------------------------------------------------
 
-    void Load(ZxMemory48K& memory) const;
-    void EasyDump48k(ZxMemory48K& memory) const;
-    void DumpCompressed48k(ZxMemory48K& memory) const;
+    void Load(ZxMemory48K& memory);
+    void EasyDump48k(ZxMemory48K& memory);
+    void DumpCompressed48k(ZxMemory48K& memory);
 
+  private:
+    void DumpV1Uncompressed(ZxMemory48K& memory);
+    void DumpV1Compressed(ZxMemory48K& memory);
+
+    void DumpV2Compressed(ZxMemory48K& memory);
+    void DumpV3Compressed(ZxMemory48K& memory);
+
+  public:
     //-------------------------------------------------------------
     //  Parsing Header Information
     //-------------------------------------------------------------
@@ -87,17 +99,21 @@ class Z80Loader : public BaseLoader{
 
     bool IsVersion1() const { return m_header.pc != 0; }
     bool IsVersion2() const { return ReadWord(30) == 30; }
-    bool IsVersion3() const { return (ReadWord(30) == 54) || (ReadWord(30) == 55); }
+    bool IsVersion3() const 
+    { return (ReadWord(30) == 54) || (ReadWord(30) == 55); }
 
     //-------------------------------------------------------------
     //  Decoding
     //-------------------------------------------------------------
 
-    Ver2SystemType DecodeVer2Model(){ return static_cast<Ver2SystemType>(ReadByte(34)); }
-    Ver3SystemType DecodeVer3Model(){ return static_cast<Ver3SystemType>(ReadByte(34)); }
+    Ver2SystemType DecodeVer2Model()
+    { return static_cast<Ver2SystemType>(ReadByte(34)); }
+    Ver3SystemType DecodeVer3Model()
+    { return static_cast<Ver3SystemType>(ReadByte(34)); }
 
     std::string Z80VersionString(Z80FileVersion version) const;
-    std::string SystemTypeString(Ver1SystemType) const { return "Zx Spectrum 48k";}
+    std::string SystemTypeString(Ver1SystemType) const 
+    { return "Zx Spectrum 48k";}
     std::string SystemTypeString(Ver2SystemType val) const;
     std::string SystemTypeString(Ver3SystemType val) const;
 

@@ -25,8 +25,11 @@ set(CXX_SRCS
 
       # File loaders
       src/loader/baseLoader.cpp 
+      # Z80
       src/loader/z80loader/z80loader.cpp 
       src/loader/z80loader/z80decompressor.cpp
+      src/loader/z80loader/decompression.cpp
+      # TAP
       src/loader/taploader/taploader.cpp
    )
 
@@ -65,10 +68,14 @@ set(TEST_SRCS
 
         # loader tests
         tests/loader/parses_extension.cpp
+        # Z80 files
         tests/loader/tetrisloader.cpp
-        tests/loader/z80loader/chunking_vector.cpp
-        tests/loader/z80loader/chunking_pointer.cpp
-        tests/loader/z80loader/chunking_big.cpp
+        tests/loader/z80loader/version2/chunking_version2_vector.cpp
+        tests/loader/z80loader/version2/chunking_version2_pointer.cpp
+        tests/loader/z80loader/version2/chunking_version2_big.cpp
+        tests/loader/z80loader/version1/chunking_version1_vector.cpp
+        tests/loader/z80loader/version1/chunking_version1_pointer.cpp
+
    )
 
 add_executable(tests ${TEST_SRCS} ${CXX_SRCS})

@@ -17,7 +17,7 @@ TEST_CASE("tests to see if z80decompressor can decompress a giant chunk", "[chun
         0x01,
         0xAB, 0xAB, 0xAB, 0xAB
     };
-    auto output = decomp.Decompress(std::move(memory));
+    auto output = decomp.DecompressV23(std::move(memory));
     // chunk with index 0
     REQUIRE(output[0x00].size() == 4);
     REQUIRE(output[0x00][0] == 0xED);

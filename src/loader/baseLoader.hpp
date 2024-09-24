@@ -20,7 +20,8 @@ class BaseLoader{
     //  Lifetime
     //-------------------------------------------------------------
 
-    BaseLoader(std::string& filename);
+    explicit BaseLoader(std::string& filename);
+    explicit BaseLoader(std::string&& filename);
 
   private:
     void LoadFile();
@@ -65,6 +66,7 @@ class BaseLoader{
     // Data Representation
 
     std::vector<char> bytes;
+    std::vector<std::uint8_t> bytesus;
     std::size_t m_index;
     std::string& m_filename;
 };

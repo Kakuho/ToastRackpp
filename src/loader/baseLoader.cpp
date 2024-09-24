@@ -1,4 +1,5 @@
 #include "baseLoader.hpp"
+#include <fstream>
 
 namespace Trpp::Loader{
 
@@ -17,6 +18,7 @@ BaseLoader::BaseLoader(std::string& filename)
 void BaseLoader::LoadFile(){
   std::ifstream inputfile{
     m_filename, std::ios::in | std::ios::ate | std::ios::binary
+
   };
   if(!inputfile){
     throw std::runtime_error{"Input file error"};

@@ -18,11 +18,118 @@ Z80Decompressor::Z80Decompressor()
 }
 
 //-------------------------------------------------------------
-//  Decompression 
+//  Decompression For Version 1 .Z80 files
+//-------------------------------------------------------------
+
+DecompressedPage 
+Z80Decompressor::DecompressV1(std::vector<std::uint8_t>&& src){
+  // Procedure to decompress a version 1 .z80 file.
+  // decompressed will be our output buffer
+  DecompressedPage decompressed{};
+  decompressed.reserve(src.size());
+  // main decompression loop
+  std::size_t index = 0x00;
+  std::size_t startIndex = index;
+  bool flag = false;
+  while(true){
+    if(src[index] == 0x00){
+      bool endcondition = 
+        (src[index+1] == 0xED) &&
+        (src[index+2] == 0xED) &&
+        (src[index+3] == 0x00);
+      if(endcondition) break;
+    }
+    if(src[index] != 0xED){
+      index++;
+      flag = true;
+    }
+    else{
+      if(flag){
+        // now we perform insertion
+        decompressed.insert(decompressed.end(), 
+            src.begin() + startIndex, src.begin() + index);
+        flag = false;
+      }
+      if(src[index+1] == 0xED){
+        std::uint8_t repetition = src[index+2];
+        std::uint8_t byte = src[index+3];
+        decompressed.insert(decompressed.end(), repetition, byte);
+        index += 4;
+      }
+      else{
+        decompressed.insert(decompressed.end(), {0xED, src[index+1]});
+        index += 2;
+      }
+      // update the start to the new index
+      startIndex = index;
+    }
+  } 
+  // final check
+  if(flag){
+    decompressed.insert(decompressed.end(), 
+        src.begin() + startIndex, src.begin() + index);
+  }
+  return decompressed;
+}
+
+DecompressedPage 
+Z80Decompressor::DecompressV1(std::uint8_t* src){
+  // Procedure to decompress a version 1 .z80 file.
+  // decompressed will be our output buffer
+  DecompressedPage decompressed{};
+  decompressed.reserve(100);
+  // main decompression loop
+  std::size_t index = 0x00;
+  std::size_t startIndex = index;
+  bool flag = false;
+  while(true){
+    if(src[index] == 00){
+      bool endcondition = 
+        (src[index+1] == 0xED) &&
+        (src[index+2] == 0xED) &&
+        (src[index+3] == 0x00);
+      if(endcondition) break;
+    }
+    else if(src[index] != 0xED){
+      index++;
+      flag = true;
+    }
+    else{
+      if(flag){
+        // now we perform insertion
+        decompressed.insert(decompressed.end(), 
+            src + startIndex, src + index);
+        flag = false;
+      }
+      if(src[index+1] == 0xED){
+        std::uint8_t repetition = src[index+2];
+        std::uint8_t byte = src[index+3];
+        decompressed.insert(decompressed.end(), repetition, byte);
+        index += 4;
+      }
+      else{
+        decompressed.insert(decompressed.end(), {0xED, src[index+1]});
+        index += 2;
+      }
+      // update the start to the new index
+      startIndex = index;
+    }
+  } 
+  // final check
+  if(flag){
+    decompressed.insert(decompressed.end(), 
+        src + startIndex, src + index);
+  }
+  return decompressed;
+
+}
+
+//-------------------------------------------------------------
+//  Decompression For Version 2 / 3 .Z80 files
 //-------------------------------------------------------------
 
 Z80ChunkHeader 
-Z80Decompressor::GetChunkHeader(std::vector<std::uint8_t>& src){
+Z80Decompressor::GetChunkHeaderV23(std::vector<std::uint8_t>& src){
   std::uint16_t length = src[0];
   length <<= 8;
   length |= src[1];
@@ -33,7 +140,7 @@ Z80Decompressor::GetChunkHeader(std::vector<std::uint8_t>& src){
 }
 
 Z80ChunkHeader 
-Z80Decompressor::GetChunkHeader(std::uint8_t* src){
+Z80Decompressor::GetChunkHeaderV23(std::uint8_t* src){
   std::uint16_t length = src[0];
   length <<= 8;
   length |= src[1];
@@ -43,13 +150,11 @@ Z80Decompressor::GetChunkHeader(std::uint8_t* src){
   };
 }
 
-
 std::pair<PayloadType, std::size_t>
-Z80Decompressor::DecompressChunk(std::vector<std::uint8_t>&& chunk){
-  // Procedure to decompress 1 single chunk
-  // Mayhaps more optimised than v1 since potentially less reallocations, however 
-  // both still need to be tested for correctness and profiled for speed
-  Z80ChunkHeader header = GetChunkHeader(chunk);
+Z80Decompressor::DecompressChunkV23(std::vector<std::uint8_t>&& chunk){
+  // Procedure to decompress 1 single chunk following the chunk
+  // layout in version 2 and 3
+  Z80ChunkHeader header = GetChunkHeaderV23(chunk);
   // decompressed will be our output buffer
   DecompressedPage decompressed{};
   decompressed.reserve(header.length);
@@ -89,14 +194,14 @@ Z80Decompressor::DecompressChunk(std::vector<std::uint8_t>&& chunk){
         chunk.begin() + startIndex, chunk.begin() + index);
   }
   return {{header.page, decompressed}, index};
+
 }
 
 std::pair<PayloadType, std::size_t>
-Z80Decompressor::DecompressChunk(std::uint8_t* chunk){
-  // Procedure to decompress 1 single chunk
-  // Mayhaps more optimised than v1 since potentially less reallocations, however 
-  // both still need to be tested for correctness and profiled for speed
-  Z80ChunkHeader header = GetChunkHeader(chunk);
+Z80Decompressor::DecompressChunkV23(std::uint8_t* chunk){
+  // Procedure to decompress 1 single chunk following the chunk layout 
+  // in version 2 and 3
+  Z80ChunkHeader header = GetChunkHeaderV23(chunk);
   // decompressed will be our output buffer
   DecompressedPage decompressed{};
   decompressed.reserve(header.length);
@@ -136,20 +241,24 @@ Z80Decompressor::DecompressChunk(std::uint8_t* chunk){
         chunk + startIndex, chunk + index);
   }
   return {{header.page, decompressed}, index};
+
 }
 
 DecompressedLutType 
-Z80Decompressor::Decompress(std::vector<std::uint8_t>&& src){
-  // src represents something we're reading only from, and should not alter
+Z80Decompressor::DecompressV23(std::vector<std::uint8_t>&& src){
+  // src represents something we're reading only from, 
+  // and should not alter
   std::size_t index = 0;
   DecompressedLutType lut{};
   while(index < src.size()){
-    auto [decompressed, advance] = DecompressChunk(src.data() + index);
+    auto [decompressed, advance] = 
+      DecompressChunkV23(src.data() + index);
     auto [pageIndex, bytes] = decompressed;
     index += advance;
     lut[pageIndex] = bytes;
   }
   return lut;
+
 }
 
 } // namespace Trpp::Loader

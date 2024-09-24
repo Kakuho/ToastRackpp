@@ -1,5 +1,6 @@
 #include "z80loader.hpp"
 #include "loader/utils.hpp"
+#include "loader/z80loader/decompression.hpp"
 #include <stdexcept>
 
 namespace Trpp::Loader{
@@ -30,31 +31,62 @@ void Z80Loader::CheckFileName() const {
 //  System Integration Functions
 //-------------------------------------------------------------
 
-void Z80Loader::Load(ZxMemory48K& memory) const{
+void Z80Loader::Load(ZxMemory48K& memory){
   if(IsVersion1()){
+    std::cout << "Is Version1" << '\n';
     if(ReadByte(12) & 0b100000){
-      EasyDump48k(memory);
+      DumpV1Uncompressed(memory);
     }
     else{
-      throw std::runtime_error{"Compressed 48K dump is not implemented"};
+      DumpV1Compressed(memory);
     }
   }
   else if(IsVersion2()){
-      throw std::runtime_error{"Version 2 .z80 dump is not implemented"};
+    std::cout << "Is Version2" << '\n';
+    DumpV2Compressed(memory);
   }
   else if(IsVersion3()){
-      throw std::runtime_error{"Version 3 .z80 dump is not implemented"};
+    std::cout << "Is Version3" << '\n';
+    DumpV3Compressed(memory);
   }
   else{
       throw std::runtime_error{"Unrecognised .z80 version"};
   }
 }
 
-void Z80Loader::EasyDump48k(ZxMemory48K& memory) const{
-  // procedure to dump the entire memory - this is only if uncompressed and easy!
+// V1 are only for 48k systems
+
+void Z80Loader::DumpV1Uncompressed(ZxMemory48K& memory){
   // this procedure is to dump .z80 files when no compression is made.
   for(std::size_t i = 30; i < bytes.size(); i++){
     memory[i - 30] = bytes[i];
+  }
+}
+
+void Z80Loader::DumpV1Compressed(ZxMemory48K& memory){
+  auto decompressed = Z80::DecompressV1(
+      reinterpret_cast<std::uint8_t*>(bytes.data())
+  );
+}
+
+void Z80Loader::DumpV2Compressed(ZxMemory48K& memory){
+  auto lut = Z80::DecompressV23(
+      reinterpret_cast<std::uint8_t*>(bytes.data()+55),
+      bytes.size()
+  );
+}
+
+void Z80Loader::DumpV3Compressed(ZxMemory48K& memory){
+  auto lut = Z80::DecompressV23(
+      reinterpret_cast<std::uint8_t*>(bytes.data()+86),
+      bytes.size() - 87
+  );
+  for(auto& kv: lut){
+    std::cout << std::hex << 
+              std::bitset<8>(kv.first)
+              << ' '
+              << (unsigned)kv.first
+              << '\n';
   }
 }
 
