@@ -27,6 +27,7 @@ class Spectrum48K{
     //  File Loading Routines
     //-------------------------------------------------------------
 
+    void LoadROM(std::string&& filename);
     void LoadFile(std::string&& filename);
 
   private:

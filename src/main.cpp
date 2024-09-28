@@ -14,4 +14,5 @@ int main(){
   Trpp::Loader::Z80Loader loader{ filename };
   Trpp::ZxMemory48K memory{};
   loader.Load(memory);
+  memory.Dump();
 }

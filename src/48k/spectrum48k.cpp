@@ -19,6 +19,9 @@ Spectrum48K::Spectrum48K()
 // File Loading Routines
 //-------------------------------------------------------------
 
+void Spectrum48K::LoadROM(std::string&& filename){
+}
+
 void Spectrum48K::LoadFile(std::string&& filename){
   // The client facing code for loading a file into system ram
   using namespace Loader;
@@ -39,8 +42,7 @@ void Spectrum48K::LoadFile(std::string&& filename){
 }
 
 void Spectrum48K::LoadZ80(){
-  using namespace Trpp::Loader;
-  Z80Loader loader{m_filename};
+  Trpp::Loader::Z80Loader loader{m_filename};
   loader.Load(*m_memory);
 }
 

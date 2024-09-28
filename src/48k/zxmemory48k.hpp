@@ -10,6 +10,9 @@
 #include <cstdint>
 #include <initializer_list>
 #include <stdexcept>
+#include <iostream>
+#include <iomanip>
+#include <bitset>
 
 #include "shared/zxmemory.hpp"
 
@@ -24,6 +27,26 @@ class ZxMemory48K final: public ZxMemory{
     ZxMemory48K();
     ZxMemory48K(std::initializer_list<std::uint8_t> src);
     ~ZxMemory48K() = default;
+
+    // ------------------------------------------------------ //
+    //  For Debugging
+    // ------------------------------------------------------ //
+
+    void Dump() const;
+    void DumpScreen() const;
+
+    // ------------------------------------------------------ //
+    //  Screen debugging
+    // ------------------------------------------------------ //
+
+    void ScreenToPPM6V1() const;
+    void ScreenToPPM6V2() const;
+    std::uint16_t 
+    CoordinateToAddress(std::uint16_t x, std::uint16_t y) const;
+
+    std::uint16_t 
+    AttributeAddress(std::uint16_t screenAddr) const;
+
 
     // ------------------------------------------------------ //
     //  Operator Overloads

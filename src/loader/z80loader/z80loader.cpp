@@ -72,21 +72,53 @@ void Z80Loader::DumpV1Compressed(ZxMemory48K& memory){
 void Z80Loader::DumpV2Compressed(ZxMemory48K& memory){
   auto lut = Z80::DecompressV23(
       reinterpret_cast<std::uint8_t*>(bytes.data()+55),
-      bytes.size()
+      bytes.size() - 55
   );
 }
 
 void Z80Loader::DumpV3Compressed(ZxMemory48K& memory){
   auto lut = Z80::DecompressV23(
       reinterpret_cast<std::uint8_t*>(bytes.data()+86),
-      bytes.size() - 87
+      bytes.size() - 86
   );
-  for(auto& kv: lut){
-    std::cout << std::hex << 
-              std::bitset<8>(kv.first)
+  std::size_t bytesindex = 0;
+  for(const auto& [index, decompressedPage]: lut){
+    std::cout << std::hex 
+              << std::bitset<8>(index)
               << ' '
-              << (unsigned)kv.first
+              << static_cast<unsigned>(index)
               << '\n';
+    /*
+    for(auto k: decompressedPage){
+      std::cout << (static_cast<unsigned>(k)&0xFF) << ' ';
+      bytesindex++;
+      if(bytesindex % 16 == 0){
+        std::cout << '\n';
+      }
+    }
+    */
+    if(Is48K()){
+      std::uint16_t offset = 0;
+      switch(index){
+        case 4:
+          offset = 0x8000;
+          break;
+        case 5:
+          offset = 0xc000;
+          break;
+        case 8:
+          offset = 0x4000;
+          break;
+        default:
+          throw std::runtime_error{"IDK POTOTAOE SALADD"};
+      }
+      for(std::uint16_t i = 0; i < decompressedPage.size(); i++){
+        memory[i + offset] = decompressedPage[i];
+      }
+    }
+    else{
+      throw std::runtime_error{"IDK what version is this"};
+    }
   }
 }
 

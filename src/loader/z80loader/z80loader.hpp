@@ -97,10 +97,14 @@ class Z80Loader : public BaseLoader{
     //  Detection code
     //-------------------------------------------------------------
 
+    // detecting the version of z80
     bool IsVersion1() const { return m_header.pc != 0; }
     bool IsVersion2() const { return ReadWord(30) == 30; }
     bool IsVersion3() const 
     { return (ReadWord(30) == 54) || (ReadWord(30) == 55); }
+
+    // detecting the version of the system
+    bool Is48K() const { return ReadByte(34) == 0;}
 
     //-------------------------------------------------------------
     //  Decoding
