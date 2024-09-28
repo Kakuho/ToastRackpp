@@ -23,6 +23,8 @@ class BaseLoader{
     explicit BaseLoader(std::string& filename);
     explicit BaseLoader(std::string&& filename);
 
+    std::size_t FileSize() const{ return bytes.size();}
+
   private:
     void LoadFile();
 
@@ -55,6 +57,7 @@ class BaseLoader{
     // ------------------------------------------------------ //
 
     std::uint8_t ReadByte(std::size_t index) const { return bytes[index];}
+
     std::uint16_t ReadWord(std::size_t index) const { 
       return (
           static_cast<std::uint16_t>(
@@ -66,7 +69,6 @@ class BaseLoader{
     // Data Representation
 
     std::vector<char> bytes;
-    std::vector<std::uint8_t> bytesus;
     std::size_t m_index;
     std::string& m_filename;
 };

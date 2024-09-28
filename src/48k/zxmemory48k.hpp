@@ -10,11 +10,14 @@
 #include <cstdint>
 #include <initializer_list>
 #include <stdexcept>
+#include <utility>
+#include <bitset>
 #include <iostream>
 #include <iomanip>
-#include <bitset>
+#include <format>
 
 #include "shared/zxmemory.hpp"
+#include "io/colours.hpp"
 
 namespace Trpp{
 
@@ -36,17 +39,40 @@ class ZxMemory48K final: public ZxMemory{
     void DumpScreen() const;
 
     // ------------------------------------------------------ //
-    //  Screen debugging
+    //  Screen debugging:
     // ------------------------------------------------------ //
 
+    //  Consider refactoring because they do not require reading
+    //  from internal state
     void ScreenToPPM6V1() const;
     void ScreenToPPM6V2() const;
-    std::uint16_t 
-    CoordinateToAddress(std::uint16_t x, std::uint16_t y) const;
 
     std::uint16_t 
-    AttributeAddress(std::uint16_t screenAddr) const;
+    CoordinateAddress(std::uint16_t x, std::uint16_t y) const;
 
+    std::uint16_t 
+    AttributeAddress(std::uint16_t x, std::uint16_t y) const;
+
+    std::pair<std::uint16_t, std::uint16_t> 
+    ScreenAddresses(std::uint16_t x, std::uint16_t y) const
+    {
+      return {
+              CoordinateAddress(x,y), 
+              AttributeAddress(x, y)
+      };
+    }
+
+    using ColourType = std::uint64_t;
+
+    ColourType GetInkColour(std::uint8_t attribute) const;
+    ColourType GetPaperColour(std::uint8_t attribute) const;
+
+    inline 
+    std::tuple<std::uint8_t, std::uint8_t, std::uint8_t>
+    Decompose(ColourType colour) const;
+
+    std::pair<ColourType, ColourType>
+    Colours(std::uint8_t attribute) const;
 
     // ------------------------------------------------------ //
     //  Operator Overloads

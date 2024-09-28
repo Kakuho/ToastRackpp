@@ -31,6 +31,8 @@ set(CXX_SRCS
       src/loader/z80loader/decompression.cpp
       # TAP
       src/loader/taploader/taploader.cpp
+      # SNA
+      src/loader/snaloader/snaloader.cpp
    )
 
 add_executable(toastrack src/main.cpp ${CXX_SRCS})
@@ -75,11 +77,16 @@ set(TEST_SRCS
         tests/loader/z80loader/version2/chunking_version2_big.cpp
         tests/loader/z80loader/version1/chunking_version1_vector.cpp
         tests/loader/z80loader/version1/chunking_version1_pointer.cpp
-
-   )
+)
 
 add_executable(tests ${TEST_SRCS} ${CXX_SRCS})
 
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
 
 target_compile_options(tests PRIVATE -g -std=c++20)
+
+########
+
+add_subdirectory(src)
+
+add_subdirectory(tests)
