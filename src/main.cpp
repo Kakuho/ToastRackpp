@@ -11,19 +11,17 @@
 #include "loader/snaloader/snaloader.hpp"
 
 int main(){
-  /*
-  std::string filename{"./../assets/z80/TETRIS.z80"};
+  std::string filename{"./../assets/z80/Aventura.z80"};
   Trpp::Loader::Z80Loader loader{ filename };
   Trpp::ZxMemory48K memory{};
   loader.Load(memory);
   memory.ScreenToPPM6V2();
-  memory.Dump();
-  */
 
-  std::string filename{"./../assets/sna/testSnapshot.sna"};
+  /*
+  std::string filename{"./../assets/z80/LORDSMED.Z80"};
   Trpp::Loader::SnaLoader loader{filename};
   Trpp::ZxMemory48K memory{};
   loader.Load(memory);
   memory.ScreenToPPM6V2();
-
+  */
 }

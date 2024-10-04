@@ -99,7 +99,7 @@ class Z80Loader : public BaseLoader{
 
     // detecting the version of z80
     bool IsVersion1() const { return m_header.pc != 0; }
-    bool IsVersion2() const { return ReadWord(30) == 30; }
+    bool IsVersion2() const { return ReadWord(30) == 23; }
     bool IsVersion3() const 
     { return (ReadWord(30) == 54) || (ReadWord(30) == 55); }
 

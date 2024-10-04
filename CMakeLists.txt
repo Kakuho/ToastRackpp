@@ -37,7 +37,7 @@ set(CXX_SRCS
 
 add_executable(toastrack src/main.cpp ${CXX_SRCS})
 
-target_compile_options(toastrack PRIVATE -g -std=c++20)
+target_compile_options(toastrack PRIVATE -std=c++20)
 
 #set_target_properties(toastrack PROPERTIES CXX_EXTENSIONS OFF)
 
@@ -83,10 +83,4 @@ add_executable(tests ${TEST_SRCS} ${CXX_SRCS})
 
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
 
-target_compile_options(tests PRIVATE -g -std=c++20)
-
-########
-
-add_subdirectory(src)
-
-add_subdirectory(tests)
+target_compile_options(tests PRIVATE -std=c++20)
