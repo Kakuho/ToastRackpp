@@ -22,6 +22,7 @@ set(CXX_SRCS
       # 48k
       src/48k/zxmemory48k.cpp
       src/48k/spectrum48k.cpp
+      src/48k/vram_utils.cpp
 
       # File loaders
       src/loader/baseLoader.cpp 
@@ -33,28 +34,32 @@ set(CXX_SRCS
       src/loader/taploader/taploader.cpp
       # SNA
       src/loader/snaloader/snaloader.cpp
-   )
+)
 
-add_executable(toastrack src/main.cpp ${CXX_SRCS})
-
+# construct the toastrack static library
+add_library(toastrack SHARED ${CXX_SRCS})
 target_compile_options(toastrack PRIVATE -std=c++20)
 
-#set_target_properties(toastrack PROPERTIES CXX_EXTENSIONS OFF)
+# construct main program with toastrack as a dependency
+add_executable(main src/main.cpp)
+target_link_libraries(main toastrack)
+target_compile_options(main PRIVATE -std=c++20)
 
-#add_custom_command(
-#    TARGET toastrack
-#    POST_BUILD
-#    COMMAND toastrack
-#)
+#############################
 
 # unit tests
 
+# the strange structure is so that I can selectively rebuild some tests which im currently targeting
+
 find_package(Catch2 3 REQUIRED)
 
-set(TEST_SRCS 
+set(CPU_TEST_SRCS
         # cpu tests
         tests/cpu/general.cpp
         tests/cpu/registerdecoding.cpp
+        # bridge
+        tests/cpu/bridge/bridge.cpp
+
         # 8 bit tests
         tests/cpu/8bitload/ld_r_r.cpp 
         tests/cpu/8bitload/ld_r_n.cpp
@@ -62,14 +67,29 @@ set(TEST_SRCS
         tests/cpu/8bitload/ld_r_idx.cpp
         tests/cpu/8bitload/ld_hl_r.cpp
         tests/cpu/8bitload/ld_hl_n.cpp
-        # bridge
-        tests/cpu/bridge/bridge.cpp
+)
 
+
+set(CURRENT_CPU_TEST_SRCS
+        tests/cpu/8bitload/ld_r_r.cpp 
+)
+
+#####
+
+set(SYSTEM_TEST_SRCS
         # memory tests
         tests/memory/48kmemory.cpp
+)
 
+set(CURRENT_SYSTEM_TEST_SRCS
+)
+
+#####
+
+set(LOADER_TEST_SRCS
         # loader tests
         tests/loader/parses_extension.cpp
+
         # Z80 files
         tests/loader/tetrisloader.cpp
         tests/loader/z80loader/version2/chunking_version2_vector.cpp
@@ -79,8 +99,17 @@ set(TEST_SRCS
         tests/loader/z80loader/version1/chunking_version1_pointer.cpp
 )
 
-add_executable(tests ${TEST_SRCS} ${CXX_SRCS})
+set(CURRENT_LOADER_TEST_SRCS
+)
 
-target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
+#####
 
+set(TEST_SRCS 
+      ${CURRENT_CPU_TEST_SRCS}
+      ${CURRENT_SYSTEM_TEST_SRCS}
+      ${CURRENT_LOADER_TEST_SRCS}
+)
+
+add_executable(tests ${TEST_SRCS})
+target_link_libraries(tests PRIVATE Catch2::Catch2WithMain toastrack)
 target_compile_options(tests PRIVATE -std=c++20)

@@ -1274,7 +1274,6 @@ void Z80::DoSLA(std::uint8_t& src){
   leadingbit ? SetCarry(FlagRegister::f1) : ClearCarry(FlagRegister::f1);
 }
 
-
 void Z80::SLA_r(std::uint8_t r){
   if(!registerParamOkay(r)){
     throw std::runtime_error{"SLA_r: failed to decode r"};

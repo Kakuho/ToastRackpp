@@ -1,3 +1,5 @@
+#ifndef IO_COLOURS_HPP 
+#define IO_COLOURS_HPP 
 // constants for the colour pallete
 
 #include <cstdint>
@@ -22,4 +24,6 @@ namespace Trpp::IO{
   inline constexpr std::uint64_t BRIGHT_CYAN     = 0x00'02FFFF;
   inline constexpr std::uint64_t BRIGHT_YELLOW   = 0x00'FFFF1D;
   inline constexpr std::uint64_t BRIGHT_WHITE    = 0x00'FFFFFF;
-}
+} // namespace Trpp::IO
+
+#endif

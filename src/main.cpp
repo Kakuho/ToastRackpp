@@ -15,7 +15,7 @@ int main(){
   Trpp::Loader::Z80Loader loader{ filename };
   Trpp::ZxMemory48K memory{};
   loader.Load(memory);
-  memory.ScreenToPPM6V2();
+  memory.ScreenToPPM6();
 
   /*
   std::string filename{"./../assets/z80/LORDSMED.Z80"};
