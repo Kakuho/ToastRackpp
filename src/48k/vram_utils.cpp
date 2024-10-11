@@ -5,9 +5,18 @@ namespace Trpp{
 using ColourType = std::uint64_t;
 using AddressType = std::uint16_t;
 
+std::pair<std::uint16_t, std::uint8_t>
+PixelCoordinates(std::uint8_t x, std::uint8_t y){
+  return{
+    x / 8,
+    y
+  };
+}
+
 AddressType
-CoordinateAddress(std::uint16_t x, std::uint16_t y)
+CoordinateAddress(std::uint8_t x, std::uint8_t y)
 {
+  assert(!(x & ~0x1F) && "x must be a 5 bit integer");
   // x is in bytes
   std::uint16_t coordinate = 0b010 << 2;
   coordinate |= ((y & 0xc0) >> 6);
@@ -21,8 +30,9 @@ CoordinateAddress(std::uint16_t x, std::uint16_t y)
 }
 
 AddressType
-AttributeAddress(std::uint16_t x, std::uint16_t y){ 
+AttributeAddress(std::uint8_t x, std::uint8_t y){ 
   // x is in bytes
+  assert(!(x & ~0x1F) && "x must be a 5 bit integer");
   return 0x5800 + (((y/8) * 32) + x); 
 }
 

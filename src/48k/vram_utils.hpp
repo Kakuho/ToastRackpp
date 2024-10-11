@@ -7,6 +7,7 @@
 //  http://www.breakintoprogram.co.uk/hardware/computers/zx-spectrum/memory-map
 //  http://www.breakintoprogram.co.uk/hardware/computers/zx-spectrum/screen-memory-layout
 
+#include <cassert>
 #include <cstdint>
 #include <utility>
 #include <tuple>
@@ -18,20 +19,22 @@ namespace Trpp{
 using ColourType = std::uint64_t;
 using AddressType = std::uint16_t;
 
+std::pair<std::uint16_t, std::uint8_t>
+PixelCoordinates(std::uint8_t x, std::uint8_t y);
+
 // Returns the vram address of the coordinate (x, y)
-AddressType CoordinateAddress(std::uint16_t x, std::uint16_t y);
+AddressType CoordinateAddress(std::uint8_t x, std::uint8_t y);
 
 // Returns the vram address of the attribute for (x, y)
-AddressType AttributeAddress(std::uint16_t x, std::uint16_t y);
-
-ColourType GetInkColour(std::uint8_t attribute);
-
-ColourType GetPaperColour(std::uint8_t attribute);
-
+AddressType AttributeAddress(std::uint8_t x, std::uint8_t y);
 
 // Returns the addresses of a coordinate (coordinate, attribute)
 std::pair<AddressType, AddressType>
 ScreenAddresses(std::uint16_t x, std::uint16_t y);
+
+ColourType GetInkColour(std::uint8_t attribute);
+
+ColourType GetPaperColour(std::uint8_t attribute);
 
 // Returns the ink and paper colour in (ink, paper)
 std::pair<ColourType, ColourType> 

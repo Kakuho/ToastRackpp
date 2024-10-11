@@ -38,7 +38,7 @@ set(CXX_SRCS
 
 # construct the toastrack static library
 add_library(toastrack SHARED ${CXX_SRCS})
-target_compile_options(toastrack PRIVATE -std=c++20)
+target_compile_options(toastrack PRIVATE -g -std=c++20)
 
 # construct main program with toastrack as a dependency
 add_executable(main src/main.cpp)
@@ -79,9 +79,11 @@ set(CURRENT_CPU_TEST_SRCS
 set(SYSTEM_TEST_SRCS
         # memory tests
         tests/memory/48kmemory.cpp
+        tests/memory/vram.cpp
 )
 
 set(CURRENT_SYSTEM_TEST_SRCS
+        tests/memory/vram.cpp
 )
 
 #####
@@ -112,4 +114,4 @@ set(TEST_SRCS
 
 add_executable(tests ${TEST_SRCS})
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain toastrack)
-target_compile_options(tests PRIVATE -std=c++20)
+target_compile_options(tests PRIVATE -g -std=c++20)
