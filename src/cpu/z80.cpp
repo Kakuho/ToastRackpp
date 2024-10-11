@@ -65,37 +65,50 @@ std::uint8_t Z80::StackPopByte(){
 
 std::uint8_t& Z80::registerTable(std::uint8_t r){
   switch(r){
-    case 0b000:
-      return m_regs.b1;
-    case 0b001:
-      return m_regs.c1;
-    case 0b010:
-      return m_regs.d1;
-    case 0b011:
-      return m_regs.e1;
-    case 0b100:
-      return m_regs.h1;
-    case 0b101:
-      return m_regs.l1;
-    case 0b110:
-      return (*(m_memory))[m_regs.hl1];
-    case 0b111:
-      return m_regs.a1;
+    case 0b000: return m_regs.b1;
+    case 0b001: return m_regs.c1;
+    case 0b010: return m_regs.d1;
+    case 0b011: return m_regs.e1;
+    case 0b100: return m_regs.h1;
+    case 0b101: return m_regs.l1;
+    case 0b110: return (*(m_memory))[m_regs.hl1];
+    case 0b111: return m_regs.a1;
     default:
       throw std::runtime_error{"unable to decode register r = 0b110"};
   }
 }
 
 Z80RegisterPair& Z80::registerPairSPTable(std::uint8_t r){
+  // generally for 16 bit instructions which has ss parameter
   switch(r){
-    case 0b00:
-      return m_regs.bc1;
-    case 0b01:
-      return m_regs.de1;
-    case 0b10:
-      return m_regs.hl1;
-    case 0b11:
-      return m_regs.sp;
+    case 0b00: return m_regs.bc1;
+    case 0b01: return m_regs.de1;
+    case 0b10: return m_regs.hl1;
+    case 0b11: return m_regs.sp;
+    default:
+      throw std::runtime_error{"unable to decode register pair"};
+  }
+}
+
+Z80RegisterPair& Z80::registerPairPPTable(std::uint8_t pp){
+  // generally for 16 bit instructions which has pp as parameter
+  switch(pp){
+    case 0b00: return m_regs.bc1;
+    case 0b01: return m_regs.de1;
+    case 0b10: return m_regs.ix;
+    case 0b11: return m_regs.sp;
+    default:
+      throw std::runtime_error{"unable to decode register pair"};
+  }
+}
+
+Z80RegisterPair& Z80::registerPairRRTable(std::uint8_t rr){
+  // generally for 16 bit instructions which has rr as parameter
+  switch(rr){
+    case 0b00: return m_regs.bc1;
+    case 0b01: return m_regs.de1;
+    case 0b10: return m_regs.iy;
+    case 0b11: return m_regs.sp;
     default:
       throw std::runtime_error{"unable to decode register pair"};
   }
@@ -103,14 +116,10 @@ Z80RegisterPair& Z80::registerPairSPTable(std::uint8_t r){
 
 Z80RegisterPair& Z80::registerPairAFTable(std::uint8_t r){
   switch(r){
-    case 0b00:
-      return m_regs.bc1;
-    case 0b01:
-      return m_regs.de1;
-    case 0b10:
-      return m_regs.hl1;
-    case 0b11:
-      return m_regs.af1;
+    case 0b00: return m_regs.bc1;
+    case 0b01: return m_regs.de1;
+    case 0b10: return m_regs.hl1;
+    case 0b11: return m_regs.af1;
     default:
       throw std::runtime_error{"unable to decode register pair"};
   }
@@ -723,7 +732,6 @@ void Z80::ADC_a_iyd(std::int8_t d){
   m_regs.a1 = DoADC(m_regs.a1, (*(m_memory))[m_regs.iy + d], m_regs.f1 & Flags::Carry);
 }
 
-
 std::int8_t Z80::DoSUB(const std::int8_t dest, const std::int8_t src){
   // impl for SUB_x_y functions
   // casts the unsigned to signed as alu only works on signed arithmetic
@@ -770,10 +778,48 @@ void Z80::SUB_a_iyd(std::int8_t d){
   m_regs.a1 = DoSUB(m_regs.a1, (*(m_memory))[m_regs.iy + d]);
 }
 
-/*
+std::int8_t Z80::DoSBC(const std::int8_t dest, const std::int8_t src, bool carryIn){
+  // TODO: Implement condition checking
+  // implementation for Subtract with Carry
+  // destination = destination - (src + carry)
+  std::int8_t output = dest - (src + carryIn);
+  return output;
+}
+
+void Z80::SBC_a_r(std::uint8_t r){
+  // destination = a, 
+  // src = register r
+  assert(registerParamOkay(r));
+  m_regs.a1 = DoSBC(m_regs.a1, registerTable(r), GetCarry());
+
+}
+
+void Z80::SBC_a_n(std::int8_t n){
+  // destination = a,
+  // src = immediate n 
+  m_regs.a1 = DoSBC(m_regs.a1, n, GetCarry());
+}
+
+void Z80::SBC_a_hl(){
+  // destination = a,
+  // src = memory[HL]
+  m_regs.a1 = DoSBC(m_regs.a1, (*(m_memory))[m_regs.hl1], GetCarry());
+}
+
+void Z80::SBC_a_ixd(std::int8_t d){
+  // destination = a,
+  // src = memroy[ix + d]
+  m_regs.a1 = DoSBC(m_regs.a1, (*(m_memory))[m_regs.ix + d], GetCarry());
+}
+
+void Z80::SBC_a_iyd(std::int8_t d){
+  // destination = a,
+  // src = memroy[iy + d]
+  m_regs.a1 = DoSBC(m_regs.a1, (*(m_memory))[m_regs.iy + d], GetCarry());
+}
+
 std::int8_t Z80::DoAND(const std::uint8_t dest, const std::uint8_t src){
   // impl for bitwise AND_x_y instructions
-
   std::uint8_t output = dest & src;
   // what is overflow for AND?
   bool isOverflow = 
@@ -787,17 +833,85 @@ std::int8_t Z80::DoAND(const std::uint8_t dest, const std::uint8_t src){
   ClearAddSubtract(FlagRegister::f1);
   ClearCarry(FlagRegister::f1);
   return output;
-
 }
-*/
+
+void Z80::AND_a_r(std::uint8_t r){
+  // destination = a
+  // src = registerTable(r)
+  assert(registerParamOkay(r));
+  m_regs.a1 = DoAND(m_regs.a1, registerTable(r));
+}
+
+void Z80::AND_a_n(std::int8_t n){
+  // destination = a
+  // src = immediate(n)
+  m_regs.a1 = DoAND(m_regs.a1, registerTable(n));
+}
+
+void Z80::AND_a_hl(){
+  // destination = a
+  // src = memory[hl]
+  m_regs.a1 = DoAND(m_regs.a1, (*(m_memory))[m_regs.hl1]);
+}
+
+void Z80::AND_a_ixd(std::int8_t d){
+  // destination = a
+  // src = memory[ix + d]
+  m_regs.a1 = DoAND(m_regs.a1, (*(m_memory))[m_regs.ix + d]);
+}
+
+void Z80::AND_a_iyd(std::int8_t d){
+  // destination = a
+  // src = memory[iy + d]
+  m_regs.a1 = DoAND(m_regs.a1, (*(m_memory))[m_regs.iy + d]);
+}
+
+std::int8_t Z80::DoOR(const std::uint8_t dest, const std::uint8_t src){
+  // TODO :: CHECK CONDITIONS
+  // implementation for logical (they mean bitwise) OR
+  std::uint8_t output = dest | src;
+  return output;
+}
+
+void Z80::OR_a_r(std::uint8_t r){
+  // dest = a
+  // src = registerTable(r)
+  assert(registerParamOkay(r));
+  m_regs.a1 = DoOR(m_regs.a1, registerTable(r));
+}
+
+void Z80::OR_a_n(std::int8_t n){
+  // dest = a
+  // src = immediate(n)
+  m_regs.a1 = DoOR(m_regs.a1, n);
+}
+
+void Z80::OR_a_hl(){
+  // dest = a
+  // src = memory[hl]
+  m_regs.a1 = DoOR(m_regs.a1, (*(m_memory))[m_regs.hl1]);
+}
+
+void Z80::OR_a_ixd(std::int8_t d){
+  // dest = a
+  // src = memory[ix + d]
+  m_regs.a1 = DoOR(m_regs.a1, (*(m_memory))[m_regs.ix + d]);
+}
+
+void Z80::OR_a_iyd(std::int8_t d){
+  // dest = a
+  // src = memory[ix + d]
+  m_regs.a1 = DoOR(m_regs.a1, (*(m_memory))[m_regs.ix + d]);
+}
 
 std::int8_t Z80::DoXOR(const std::uint8_t dest, const std::uint8_t src){
+  // Todo :: CHECK CONDITIONS
   std::uint8_t output = dest ^ src;
   // conditions
   output & 0x80 ? SetSign(FlagRegister::f1) : ClearSign(FlagRegister::f1);
   output == 0 ? SetZero(FlagRegister::f1) : ClearZero(FlagRegister::f1);
   ClearHalfCarry(FlagRegister::f1);
-  IsEvenParity(output) ? SetParityOverflow(FlagRegister::f1) : ClearParityOverflow(FlagRegister::f1);
+  //IsEvenParity(output) ? SetParityOverflow(FlagRegister::f1) : ClearParityOverflow(FlagRegister::f1);
   ClearAddSubtract(FlagRegister::f1);
   ClearCarry(FlagRegister::f1);
   return output;
@@ -830,6 +944,42 @@ void Z80::XOR_a_ixd(std::int8_t d){
 void Z80::XOR_a_iyd(std::int8_t d){
   // a = a ^ (iy + d)
   m_regs.a1 = DoXOR(m_regs.a1, (*(m_memory))[m_regs.iy + d]);
+}
+
+void Z80::DoCP(const std::int8_t& src, const std::int8_t& dest){
+  // Todo :: Check Conditions
+  std::uint8_t output = src - dest;
+}
+
+void Z80::CP_a_r(std::uint8_t r){
+  // dest = a
+  // src = registerTable(r)
+  assert(registerParamOkay(r));
+  DoCP(m_regs.a1, registerTable(r));
+}
+
+void Z80::CP_a_n(std::int8_t n){
+  // dest = a
+  // src = immediate(n)
+  DoCP(m_regs.a1, n);
+}
+
+void Z80::CP_a_hl(){
+  // dest = a
+  // src = memory[hl]
+  DoCP(m_regs.a1, (*(m_memory))[m_regs.hl1]);
+}
+
+void Z80::CP_a_ixd(std::int8_t d){
+  // dest = a
+  // src = memory[ix+d]
+  DoCP(m_regs.a1, (*(m_memory))[m_regs.ix + d]);
+}
+
+void Z80::CP_a_iyd(std::int8_t d){
+  // dest = a
+  // src = memory[ix+d]
+  DoCP(m_regs.a1, (*(m_memory))[m_regs.iy + d]);
 }
 
 std::uint8_t Z80::DoINC(const std::uint8_t src){
@@ -955,6 +1105,11 @@ void Z80::NOP(){
   // does nothing!
 }
 
+void Z80::HALT(){
+  // should update the clock cycle
+  m_halted = true;
+}
+
 void Z80::DI(){
   // IFF <-- 0
   m_iff1 = false;
@@ -986,6 +1141,12 @@ void Z80::IM2(){
 // 16-bit Arithmetric Group
 //---------------------------------------------------------------//
 
+void Z80::ADD16_hl_ss(std::uint8_t ss){
+  assert(ss < 3);
+  
+}
+
+/*
 void Z80::INC_ss(std::uint8_t ss){
   // ss = ss + 1
   if(!CheckSS(ss)){
@@ -1023,6 +1184,7 @@ void Z80::DEC_IY(){
   // iy = iy - 1
   m_regs.iy = m_regs.iy - 1;
 }
+*/
 
 //---------------------------------------------------------------//
 // Rotate and Shift Group

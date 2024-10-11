@@ -24,6 +24,9 @@ Z80Bridge::Z80Bridge(ZxMemory* memory)
 
 void Z80Bridge::Step(){
   // main driving code for the instruction stepped interpreter
+  if(IsHalted()){
+    m_cpu->NOP();
+  }
   if(NMI()){
     NMI() = false;
     HandleInterrupt();
@@ -285,6 +288,9 @@ void Z80Bridge::HandleInterrupt(){
       PC() = intVector;
       break;
     }
+  }
+  if(IsHalted()){
+    IsHalted() = false;
   }
 }
 

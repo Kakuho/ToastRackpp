@@ -57,11 +57,15 @@ class Z80Bridge{
     bool& NMI(){ return m_cpu->m_nmi;}
     const bool& NMI() const{ return m_cpu->m_nmi;}
 
+
     bool& INT(){ return m_cpu->m_int;}
     const bool& INT() const{ return m_cpu->m_int;}
 
     Z80::InterruptMode& IntMode(){ return m_cpu->m_imode;}
     const Z80::InterruptMode& IntMode() const{ return m_cpu->m_imode;}
+
+    bool& IsHalted(){ return m_cpu->m_halted;}
+    const bool& IsHalted() const{ return m_cpu->m_halted;}
 
     // ------------------------------------------------------ //
     //  Memory Addressing

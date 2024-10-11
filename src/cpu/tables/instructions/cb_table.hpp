@@ -15,7 +15,7 @@ class CBTable{
     //  Constants
     //-------------------------------------------------------------
     
-    static constexpr std::size_t TABLE_SIZE = 0xff;
+    static constexpr inline std::size_t TABLE_SIZE = 0xff;
 
     //-------------------------------------------------------------
     // lifetime

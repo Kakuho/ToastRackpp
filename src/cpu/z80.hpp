@@ -12,6 +12,7 @@
 #include <type_traits>
 #include <memory>
 #include <format>
+#include <cassert>
 
 #include "../utils.hpp"
 #include "z80registers.hpp"
@@ -67,6 +68,7 @@ class Z80{
     bool m_nmi;
     bool m_int;
     InterruptMode m_imode;
+    bool m_halted;
 
     //-------------------------------------------------------------
     // Instruction operand tables
@@ -76,6 +78,9 @@ class Z80{
     std::uint8_t& registerTable(std::uint8_t r);
     Z80RegisterPair& registerPairSPTable(std::uint8_t r); 
     Z80RegisterPair& registerPairAFTable(std::uint8_t r); 
+    Z80RegisterPair& registerPairPPTable(std::uint8_t r); 
+    Z80RegisterPair& registerPairRRTable(std::uint8_t r); 
+
     bool registerParamOkay(std::uint8_t r){ return r < 7;}
 
   public:
@@ -232,32 +237,27 @@ class Z80{
     void SUB_a_ixd(std::int8_t d);  // DD
     void SUB_a_iyd(std::int8_t d);  // FD
 
-    /* Does CarryIn Affect Overflow cond?
     std::int8_t DoSBC(const std::int8_t dest, const std::int8_t src, bool carryIn);
     void SBC_a_r(std::uint8_t r);
     void SBC_a_n(std::int8_t n);
     void SBC_a_hl();
     void SBC_a_ixd(std::int8_t d);  // DD
     void SBC_a_iyd(std::int8_t d);  // FD
-    */
 
-    /* When does an AND overflow?
+
     std::int8_t DoAND(const std::uint8_t dest, const std::uint8_t src);
     void AND_a_r(std::uint8_t r);
     void AND_a_n(std::int8_t n);
     void AND_a_hl();
     void AND_a_ixd(std::int8_t d);  // DD
     void AND_a_iyd(std::int8_t d);  // FD
-    */
 
-    /* When does an OR overflow?
     std::int8_t DoOR(const std::uint8_t dest, const std::uint8_t src);
     void OR_a_r(std::uint8_t r);
     void OR_a_n(std::int8_t n);
     void OR_a_hl();
     void OR_a_ixd(std::int8_t d);  // DD
     void OR_a_iyd(std::int8_t d);  // FD
-    */
 
     std::int8_t DoXOR(const std::uint8_t dest, const std::uint8_t src);
     void XOR_a_r(std::uint8_t r);
@@ -266,14 +266,12 @@ class Z80{
     void XOR_a_ixd(std::int8_t d);  // DD
     void XOR_a_iyd(std::int8_t d);  // FD
 
-    /* is this gonna used two's complement or unsigned integers?
-    std::int8_t DoCP(const std::int8_t src, const std::int8_t dest)
+    void DoCP(const std::int8_t& src, const std::int8_t& dest);
     void CP_a_r(std::uint8_t r);
     void CP_a_n(std::int8_t n);
     void CP_a_hl();
     void CP_a_ixd(std::int8_t d);  // DD
     void CP_a_iyd(std::int8_t d);  // FD
-    */
 
     std::uint8_t DoINC(std::uint8_t src);
     void INC_r(std::uint8_t r);
@@ -297,7 +295,7 @@ class Z80{
     void CCF();
     void SCF();
     void NOP();
-    //void HALT(); // requires implementing the tick cycle
+    void HALT(); // requires implementing the tick cycle
     void DI();
     void EI();
     void IM0();     // ED
@@ -308,24 +306,21 @@ class Z80{
     // 16-bit Arithmetric Group
     //---------------------------------------------------------------//
 
-    // true if ss < 3 => is ok
-    bool CheckSS(std::uint8_t ss){ return ss > 3 ? false: true;}
+    void ADD16_hl_ss(std::uint8_t ss);
+    void ADC16_hl_ss(std::uint8_t ss);
+    void SBC16_hl_ss(std::uint8_t ss);
+    void ADD16_ix_pp(std::uint8_t ss);
+    void ADD16_iy_rr(std::uint8_t ss);
 
-    /* Im not sure if we interpret register ss as a twos comp integer or as unsigned
-    void ADD_hl_ss(std::uint8_t ss);
-    void ADC_HL_ss(std::uint8_t ss);
-    void SBC_HL_ss(std::uint8_t ss);
-    void ADD_IX_pp(std::uint8_t ss);
-    void ADD_IY_rr(std::uint8_t ss);
-    */
-
+    /*
     void INC_ss(std::uint8_t ss);
     void INC_IX();   // DD
     void INC_IY(); 
 
     void DEC_ss(std::uint8_t ss); 
-    void DEC_IX(); 
-    void DEC_IY(); 
+    void DEC_ix16(); 
+    void DEC_iy16(); 
+    */
 
     //---------------------------------------------------------------//
     // Rotate and Shift Group functions!!!
