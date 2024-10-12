@@ -27,8 +27,8 @@
 
 namespace Trpp::CPU{
 
-enum class EDEnums{
-  Undefined,
+enum class EDenums{
+  undefined,
 
   // 8-bit loads
   LD_a_i,

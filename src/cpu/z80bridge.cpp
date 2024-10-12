@@ -39,7 +39,7 @@ void Z80Bridge::Step(){
   switch(firstByte){
     case 0xCB:
     {
-      // prefixed with CB
+      // is CB prefixed
       std::uint8_t opcodeByte = NextByteInc();
       StepCB(opcodeByte);
       break;
@@ -94,6 +94,7 @@ void Z80Bridge::Step(){
 // ------------------------------------------------------ //
 
 void Z80Bridge::StepCB(std::uint8_t opcode){
+
   CBenums instruction = (*(pCBTable))[opcode];
   throw std::runtime_error{
         std::format("Error::StepCB::Unimplemented")
@@ -123,6 +124,7 @@ void Z80Bridge::StepED(std::uint8_t opcode){
 // ------------------------------------------------------ //
 
 void Z80Bridge::StepDD(std::uint8_t opcode){
+  DDenums instruction = (*(pDDTable))[opcode];
   throw std::runtime_error{
         std::format("Error::StepDD::Unimplemented")
   };

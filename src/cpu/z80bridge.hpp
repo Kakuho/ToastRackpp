@@ -18,6 +18,7 @@
 #include "cpu/tables/enums/cb_enums.hpp"
 #include "cpu/tables/enums/enums.hpp"
 #include "cpu/tables/instructions/cb_table.hpp"
+#include "cpu/tables/instructions/dd_table.hpp"
 #include "cpu/tables/instructions/noprefix_table.hpp"
 #include "debugz80.hpp"
 #include "shared/zxmemory.hpp"
@@ -122,6 +123,7 @@ class Z80Bridge{
     // instruction tables
     std::unique_ptr<Instructions::NoPrefixTable> pTable;
     std::unique_ptr<Instructions::CBTable> pCBTable;
+    std::unique_ptr<Instructions::DDTable> pDDTable;
     // cycle tables
 
 };

@@ -8,8 +8,8 @@
 
 namespace Trpp::CPU{
 
-enum class DDEnums{
-  Undefined,
+enum class DDenums{
+  undefined,
 
   // 8-bit loads
   LD_r_ixd,
@@ -60,11 +60,6 @@ enum class DDEnums{
 
   // Jump group
   JP_ix,
-
-  // Call Return Group
-
-  // Input Output Group
-
 };
 
 
