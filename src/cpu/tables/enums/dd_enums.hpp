@@ -1,10 +1,12 @@
-#ifndef I_ENUMS_HPP
-#define I_ENUMS_HPP
+
+#ifndef I_DDENUMS_HPP
+#define I_DDENUMS_HPP
 
 // Enums for Instructions with DD Prefix, 
 // also includes DDCB prefixed.
 //
 // Reference: Zilog Z80 Reference
+
 
 namespace Trpp::CPU{
 
@@ -43,20 +45,6 @@ enum class DDenums{
   ADD_ix_pp,
   INC_ix,
   DEC_ix,
-
-  // Rotate Shift Group
-  RLC_ixd,
-  RL_ixd,
-  RRC_ixd,
-  RR_ixd,
-  SLA_ixd,
-  SRA_ixd,
-  SRL_ixd,
-
-  // bit set group
-  BIT_b_ixd,
-  SET_b_ixd,
-  RES_b_ixd,
 
   // Jump group
   JP_ix,

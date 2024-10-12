@@ -123,9 +123,10 @@ void DDTable::SetEntries() noexcept{
   m_buffer[0x2b] = DDenums::DEC_ix;
 
   ////////////////////////////////////////////////
-  // Rotate and Shift Group
+  // Jump Group
   ////////////////////////////////////////////////
 
+  m_buffer[0xe9] = DDenums::JP_ix;
 }
 
 //-------------------------------------------------------------
@@ -139,4 +140,3 @@ DDTable::operator[](std::size_t index) const {
 }
 
 } 
-

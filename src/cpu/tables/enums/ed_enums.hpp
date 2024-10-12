@@ -1,5 +1,5 @@
-#ifndef I_ENUMS_HPP
-#define I_ENUMS_HPP
+#ifndef I_EDENUMS_HPP
+#define I_EDENUMS_HPP
 
 // Enums for Instructions with no Prefix
 //

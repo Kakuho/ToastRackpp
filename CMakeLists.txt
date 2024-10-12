@@ -17,7 +17,12 @@ set(CXX_SRCS
       src/cpu/debugz80.cpp
       # Instruction Tables
       src/cpu/tables/instructions/noprefix_table.cpp
+      src/cpu/tables/instructions/ed_table.cpp
       src/cpu/tables/instructions/cb_table.cpp
+      src/cpu/tables/instructions/dd_table.cpp
+      src/cpu/tables/instructions/ddcb_table.cpp
+      src/cpu/tables/instructions/fd_table.cpp
+      src/cpu/tables/instructions/fdcb_table.cpp
 
       # 48k
       src/48k/zxmemory48k.cpp
