@@ -312,15 +312,14 @@ class Z80{
     void ADD16_ix_pp(std::uint8_t ss);
     void ADD16_iy_rr(std::uint8_t ss);
 
-    /*
-    void INC_ss(std::uint8_t ss);
-    void INC_IX();   // DD
-    void INC_IY(); 
+    
+    void INC16_ss(std::uint8_t ss);
+    void INC16_ix();   // DD
+    void INC16_iy(); 
 
-    void DEC_ss(std::uint8_t ss); 
-    void DEC_ix16(); 
-    void DEC_iy16(); 
-    */
+    void DEC16_ss(std::uint8_t ss); 
+    void DEC16_ix(); 
+    void DEC16_iy(); 
 
     //---------------------------------------------------------------//
     // Rotate and Shift Group functions!!!
@@ -372,8 +371,8 @@ class Z80{
     void SRL_ixd(std::int8_t d);    // DDCB
     void SRL_iyd(std::int8_t d);    // FDCB
 
-    //void RLD();                   // ED // conditions need some working out
-    //void RRD();                   // ED // conditions need some working out
+    void RLD();                   // ED
+    void RRD();                 // ED
 
     //---------------------------------------------------------------//
     // Bit Set, Reset, Test Group
@@ -420,8 +419,8 @@ class Z80{
     void CALL_cc_nn(std::uint8_t cc, std::uint16_t nn);
     void RET();
     void RET_cc(std::uint8_t cc);
-    //void RETI(); // requires Interrupt behaviour
-    //void RETN(); // requires Interrupt behaviour
+    void RETI(); 
+    void RETN(); 
     void RST(std::uint8_t t);
 
     //---------------------------------------------------------------//

@@ -1,0 +1,102 @@
+Date start: 11_10_2024
+
+Date finished:
+
+Task Completed: 19 / 37
+
+---------------------------------------------------
+
+CPU Orchestration:
+
+* Create the Enums for DD                             DONE
+
+* Create the Enums for DDCB                           DONE
+
+* Create the Enums for FD                             DONE
+
+* Create the Enums for FDCB                           DONE
+
+* Fill in the CB instruction table                    DONE
+
+* Fill in the ED instruction table                    DONE
+
+* Fill in the DD instruction table                    DONE
+
+* Fill in the DDCB instruction table                  DONE
+
+* Fill in the FD instruction table                    DONE
+
+* Fill in the FDCB instruction table                  DONE
+
+* Implement Z80Bridge.StepNoPrefix()
+
+* Implement Z80Bridge.StepCB()
+
+* Implement Z80Bridge.StepED()
+
+* Implement Z80Bridge.StepDD()                        ALMOST DONE - REQUIRES ADD16_ix_pp
+
+* Implement Z80Bridge.StepDDCB()
+
+* Implement Z80Bridge.StepFD()
+
+* Implement Z80Bridge.StepFDCB()
+
+---------------------------------------------------
+
+Z80 Opcodes Logic Implementation:
+(Only the logic, not the condition checking)
+
+  8-bit Arithmetic Group:
+
+    * SBC                             DONE
+
+    * AND                             DONE
+
+    * OR                              DONE
+
+    * CP                              DONE
+  
+  General Purpose Group:
+
+    * HALT                            DONE
+  
+  16 bit Arithmetic Group:
+    
+    * ADD HL, ss 
+
+    * ADC HL, ss 
+
+    * SBC HL, ss 
+
+    * ADD IX, pp 
+
+    * ADD IY, rr 
+
+  Rotate Shift Group:
+
+    * RLD                             DONE
+
+    * RRD                             DONE
+
+  Function Call and Return Group:
+    
+    * RETI                            DONE
+
+    * RETN                            DONE
+
+  IO Group:
+
+    * Implement IO space
+
+    * IN A
+
+    * IN r
+
+    * INI
+
+    * INIR
+
+    * IND
+
+    * INDR

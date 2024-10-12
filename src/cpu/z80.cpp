@@ -1142,49 +1142,43 @@ void Z80::IM2(){
 //---------------------------------------------------------------//
 
 void Z80::ADD16_hl_ss(std::uint8_t ss){
-  assert(ss < 3);
+  assert(ss <= 3);
   
 }
 
-/*
-void Z80::INC_ss(std::uint8_t ss){
+void Z80::INC16_ss(std::uint8_t ss){
   // ss = ss + 1
-  if(!CheckSS(ss)){
-    throw std::runtime_error{"INC_ss :: failed to decode ss"};
-  }
+  assert (ss <= 3);
   auto& val =  registerPairSPTable(ss);
   val = val + 1;
 }
 
-void Z80::INC_IX(){
+void Z80::INC16_ix(){
   // ix = ix + 1
   m_regs.ix = m_regs.ix + 1;
 }
 
-void Z80::INC_IY(){
+void Z80::INC16_iy(){
   // iy = iy + 1
   m_regs.iy = m_regs.iy + 1;
 }
 
-void Z80::DEC_ss(std::uint8_t ss){
+void Z80::DEC16_ss(std::uint8_t ss){
   // ss = ss - 1
-  if(!CheckSS(ss)){
-    throw std::runtime_error{"DEC_ss :: failed to decode ss"};
-  }
+  assert(ss <= 3);
   auto& val =  registerPairSPTable(ss);
   val = val - 1;
 }
 
-void Z80::DEC_IX(){
+void Z80::DEC16_ix(){
   // ix = ix - 1
   m_regs.ix = m_regs.ix - 1;
 }
 
-void Z80::DEC_IY(){
+void Z80::DEC16_iy(){
   // iy = iy - 1
   m_regs.iy = m_regs.iy - 1;
 }
-*/
 
 //---------------------------------------------------------------//
 // Rotate and Shift Group
@@ -1526,27 +1520,34 @@ void Z80::SRL_iyd(std::int8_t d){
   DoSRA((*(m_memory))[m_regs.iy + d]);
 }
 
-/*
 void Z80::RLD(){
-  std::uint8_t old_hlLow = (*(m_memory))[m_regs.hl1] & 0xF;
-  std::uint8_t old_hlHigh = ((*(m_memory))[m_regs.hl1] & 0xF0) >> 4;
+
+  // Todo :: Check the conditions
+  std::uint8_t old_hl_low = (*(m_memory))[m_regs.hl1] & 0xF;
+  std::uint8_t old_hl_high = ((*(m_memory))[m_regs.hl1] & 0xF0) >> 4;
   std::uint8_t old_a_low = m_regs.a1 & 0xF;
   // now we perform the swapping
   // (hl)
-  std::uint8_t new_hl = (old_hlLow << 4) | old_a_low;
+  std::uint8_t new_hl = (old_hl_low << 4) | old_a_low;
   (*(m_memory))[m_regs.hl1] = new_hl;
   // accumulator
-  std::uint8_t new_a_low = old_hlHigh;
   m_regs.a1 &= 0xF0;
-  m_regs.a1 |= new_a_low;
+  m_regs.a1 |= old_hl_high;
 }
-*/
 
-/*
 void Z80::RRD(){
-
+  // Todo :: Check the conditions
+  std::uint8_t old_hl_low = (*(m_memory))[m_regs.hl1] & 0xF;
+  std::uint8_t old_hl_high = ((*(m_memory))[m_regs.hl1] & 0xF0) >> 4;
+  std::uint8_t old_a_low = m_regs.a1 & 0xF;
+  // now we perform the swapping
+  // (hl)
+  std::uint8_t new_hl = (old_a_low << 4) | old_hl_high;
+  (*(m_memory))[m_regs.hl1] = new_hl;
+  // accumulator
+  m_regs.a1 &= 0xF0;
+  m_regs.a1 |= old_hl_low;
 }
-*/
 
 //---------------------------------------------------------------//
 // Bit Set, Reset, Test Group
@@ -1772,7 +1773,6 @@ void Z80::CALL_nn(std::uint16_t nn){
   PushByte(pchigh);
   PushByte(pclow);
   m_regs.pc = nn;
-
 }
 
 void Z80::CALL_cc_nn(std::uint8_t cc, std::uint16_t nn){
@@ -1811,8 +1811,27 @@ void Z80::RET_cc(std::uint8_t cc){
   }
 }
 
-//void Z80::RETI();
-//void Z80::RETN();
+// Reference: Zilog Z80 manual, CPU Response 
+// an interrupt is a call to some specific memory address
+
+void Z80::RETI(){
+  // RETI - returns from a maskable interrupt
+  std::uint8_t pclow = StackPopByte();
+  std::uint8_t pchigh = StackPopByte();
+  // now form pc
+  m_regs.pc = (static_cast<std::uint16_t>(pchigh) << 8) | pclow;
+
+}
+
+void Z80::RETN(){
+  // RETN - returns from a nmi
+  std::uint8_t pclow = StackPopByte();
+  std::uint8_t pchigh = StackPopByte();
+  // now form pc
+  m_regs.pc = (static_cast<std::uint16_t>(pchigh) << 8) | pclow;
+  // copy back iff2 into iff1
+  m_iff1 = m_iff2;
+}
 
 void Z80::RST(std::uint8_t t){
   // restart on the zero page somewhere, determined by t

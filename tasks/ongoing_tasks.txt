@@ -1,0 +1,169 @@
+Will be expanded on more when I understand more regarding the system
+
+Tasks:
+
+CPU Orchestration:
+
+* Fill in the CB instruction table:
+  
+* Fill in the DD instruction table
+
+* Fill in the FD instruction table
+
+* Implement Z80Bridge.StepNoPrefix()
+
+* Implement Z80Bridge.StepCB()
+
+* Implement Z80Bridge.StepED()
+
+* Implement Z80Bridge.StepDD()
+
+* Implement Z80Bridge.StepDDCB()
+
+* Implement Z80Bridge.StepFD()
+
+* Implement Z80Bridge.StepFDCB()
+
+* Figure out a way to update PC after each instruction
+
+//-------------------------------------------------------------
+
+Clock Cycle Ticks:
+
+* Devise a system for clock cycle ticking
+
+* Implement Clock Cycle Ticking for No Prefix Instructions
+
+* Implement Clock Cycle Ticking for CB Instructions
+
+* Implement Clock Cycle Ticking for ED Instructions
+
+* Implement Clock Cycle Ticking for DD Instructions
+
+* Implement Clock Cycle Ticking for DDCB Instructions
+
+* Implement Clock Cycle Ticking for FD Instructions
+
+* Implement Clock Cycle Ticking for FDCB Instructions
+
+//-------------------------------------------------------------
+
+CPU Opcodes Logic Implementation:
+
+  8-bit Arithmetic Group:
+
+    * SBC
+
+    * AND
+
+    * OR
+
+    * CP
+  
+  General Purpose Group:
+
+    * HALT
+  
+  16 bit Arithmetic Group:
+    
+    * ADD HL, ss 
+
+    * ADC HL, ss 
+
+    * SBC HL, ss 
+
+    * ADD IX, pp 
+
+    * ADD IY, rr 
+
+  Rotate Shift Group:
+
+    * RLD
+
+    * RRD
+  
+  Function Call and Return Group:
+    
+    * RETI
+
+    * RETN
+
+  IO Group:
+    
+    * IN A
+
+    * IN r
+
+    * INI
+
+    * INIR
+
+    * IND
+
+    * INDR
+
+    * OUT n, A
+
+    * OUT C, r
+
+    * OUTI
+
+    * OTIR
+
+    * OUTD
+
+    * OTDR
+
+//-------------------------------------------------------------
+
+CPU Condition Checks:
+
+  8-bit Load Group:
+
+    * LD r, r'      
+
+    * LD r,n        
+
+    * LD r, (HL)    
+
+    * LD r, (IX+d)  
+
+    * LD r, (IY+d)  
+
+    * LD (HL), r    
+
+    * LD (IX+d), r  
+
+    * LD (IY+d), r  
+
+    * LD (HL), n      
+
+    * LD (IX+d), n    
+
+    * LD (IY+d), n    
+    
+    * LD A, (BC)      
+
+    * LD A, (DE)      
+   
+    * LD A, (nn)      
+
+    * LD (BC), A      
+
+    * LD (DE), A      
+
+    * LD (nn), A      
+
+    * LD A, I         
+    
+    * LD A, R         
+
+    * LD I,A          
+
+    * LD R, A         
+
+//-------------------------------------------------------------
+
+Graphics IO system:
+  
+  * Implement Keyboard writting and reading

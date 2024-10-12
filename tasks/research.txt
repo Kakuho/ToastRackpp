@@ -1,0 +1,14 @@
+Research topics are things I need to look into in, where I dont have a clue 
+how they work. 
+
+Research Topics:
+
+  * Find out how timing is split between the composite tv and the cpu
+
+  * Find out how the vram is used, and when it is displayed to the composite tv
+    screen.
+
+  * Figure out how the ULA work and why its important
+
+  * Look into how to get input from the host machine to the zx spectrum guest 
+    machine

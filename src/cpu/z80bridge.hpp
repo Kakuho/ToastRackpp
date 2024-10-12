@@ -15,11 +15,13 @@
 
 #include <memory>
 
-#include "cpu/tables/enums/cb_enums.hpp"
 #include "cpu/tables/enums/enums.hpp"
+#include "cpu/tables/enums/cb_enums.hpp"
+#include "cpu/tables/enums/ddcb_enums.hpp"
+#include "cpu/tables/instructions/noprefix_table.hpp"
 #include "cpu/tables/instructions/cb_table.hpp"
 #include "cpu/tables/instructions/dd_table.hpp"
-#include "cpu/tables/instructions/noprefix_table.hpp"
+#include "cpu/tables/instructions/ddcb_table.hpp"
 #include "debugz80.hpp"
 #include "shared/zxmemory.hpp"
 
@@ -89,23 +91,24 @@ class Z80Bridge{
     //-------------------------------------------------------------
 
     // Masks useful for decoding instructions
-    static constexpr std::uint8_t maskX = 0b1100'0000;
-    static constexpr std::uint8_t maskY = 0b0011'1000;
-    static constexpr std::uint8_t maskZ = 0b0000'0111;
-    static constexpr std::uint8_t maskP = 0b0011'0000;
-    static constexpr std::uint8_t maskQ = 0b0000'1000;
+    static constexpr std::uint8_t MASK_X = 0b1100'0000;
+    static constexpr std::uint8_t MASK_Y = 0b0011'1000;
+    static constexpr std::uint8_t MASK_Z = 0b0000'0111;
+    static constexpr std::uint8_t MASK_P = 0b0011'0000;
+    static constexpr std::uint8_t MASK_Q = 0b0000'1000;
 
     void Step();
 
   private:
     // these are helper functions for Tick()
+    void StepNoPrefix(std::uint8_t opcode);
     void StepCB(std::uint8_t opcode);
     void StepED(std::uint8_t opcode);
     void StepDD(std::uint8_t opcode);
     void StepDDCB(std::uint8_t opcode);
     void StepFD(std::uint8_t opcode);
     void StepFDCB(std::uint8_t opcode);
-    void StepNoPrefix(std::uint8_t opcode);
+
   public:
     // ------------------------------------------------------ //
     // Interrupt behavioural code
@@ -113,6 +116,8 @@ class Z80Bridge{
     
     void TriggerNmi(){NMI() = true;}
     void TriggerInt(){INT() = true;}
+
+    void HandleNMI();
     void HandleInterrupt();
 
   private:
@@ -124,6 +129,8 @@ class Z80Bridge{
     std::unique_ptr<Instructions::NoPrefixTable> pTable;
     std::unique_ptr<Instructions::CBTable> pCBTable;
     std::unique_ptr<Instructions::DDTable> pDDTable;
+    std::unique_ptr<Instructions::DDCBTable> pDDCBTable;
+
     // cycle tables
 
 };
