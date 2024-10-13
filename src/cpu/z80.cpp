@@ -7,11 +7,14 @@ namespace Trpp::CPU{
 //-------------------------------------------------------------
 
 Z80::Z80():
-  m_regs{},
-  m_iff1{false},
-  m_iff2{false},
-  m_nmi{false},
-  m_imode{InterruptMode::mode0}
+  m_regs  {},
+  m_ports {},
+  m_iff1  {false},
+  m_iff2  {false},
+  m_nmi   {false},
+  m_int{false},
+  m_imode{InterruptMode::mode0},
+  m_halted{false}
 {
   m_regs.pc = 0;
 }
@@ -89,6 +92,7 @@ Z80RegisterPair& Z80::registerPairSPTable(std::uint8_t r){
       throw std::runtime_error{"unable to decode register pair"};
   }
 }
+
 
 Z80RegisterPair& Z80::registerPairPPTable(std::uint8_t pp){
   // generally for 16 bit instructions which has pp as parameter
@@ -1848,5 +1852,99 @@ void Z80::RST(std::uint8_t t){
   m_regs.pc = ptable[t];
 }
 
-} // namespace Trpp::Cpu
+//---------------------------------------------------------------//
+// Input Output Group
+//---------------------------------------------------------------/
 
+// for some reason we ignore the upper address pins when we address ioport
+
+void Z80::IN_a_n(std::uint8_t n){
+  // Input from port to a
+  // port address:
+  //  n is bottom half, 
+  //  a is in top half
+  std::uint8_t ioaddr = (m_regs.a1 << 8) | n;
+  m_regs.a1 = m_ports[ioaddr].value;
+}
+
+void Z80::IN_r_c(std::uint8_t r){
+  // Input from port to register r
+  // port address:
+  //  c is bottom half, 
+  //  b is in top half
+  //
+  assert(r <= 7);
+  assert(r != 110 && "undefined opcode for IN r, (C)");
+  std::uint8_t& dest = registerTable(r);
+  std::uint8_t ioaddress = (m_regs.b1 << 8) | m_regs.c1;
+  dest = m_ports[ioaddress].value;
+
+  //  Todo :: Condititons
+}
+
+void Z80::INI(){
+  // Input from port to memory address hl
+  // port address:
+  //  c is bottom half
+  //  b is top half
+  std::uint8_t& dest = (*(m_memory))[m_regs.hl1];
+  std::uint8_t ioaddress = (m_regs.b1 << 8) | m_regs.c1;
+  dest = m_ports[ioaddress].value;
+  // afterwards hl is incremented and b is decremented
+  m_regs.hl1 = m_regs.hl1 + 1;
+  m_regs.b1 = m_regs.b1 - 1;
+  // TODO :: Conditions
+}
+
+void Z80::INIR(){
+  // Input from port to memory address hl
+  // port address:
+  //  c is bottom half
+  //  b is top half
+  std::uint8_t& dest = (*(m_memory))[m_regs.hl1];
+  std::uint8_t ioaddress = (m_regs.b1 << 8) | m_regs.c1;
+  dest = m_ports[ioaddress].value;
+  // afterwards hl is incremented and b is decremented
+  m_regs.hl1 = m_regs.hl1 + 1;
+  m_regs.b1 = m_regs.b1 - 1;
+  if(m_regs.b1 == 0){
+    m_regs.pc = m_regs.pc - 2;
+  }
+  // TODO :: Conditions
+}
+
+void Z80::IND(){
+  // Input from port to memory address hl
+  // port address:
+  //  c is bottom half
+  //  b is top half
+  std::uint8_t& dest = (*(m_memory))[m_regs.hl1];
+  std::uint8_t ioaddress = (m_regs.b1 << 8) | m_regs.c1;
+  dest = m_ports[ioaddress].value;
+  // afterwards hl and b are both decremented
+  m_regs.hl1 = m_regs.hl1 - 1;
+  m_regs.b1 = m_regs.b1 - 1;
+  // TODO :: Conditions
+}
+
+void Z80::INDR(){
+  // Input from port to memory address hl
+  // port address:
+  //  c is bottom half
+  //  b is top half
+  std::uint8_t& dest = (*(m_memory))[m_regs.hl1];
+  std::uint8_t ioaddress = (m_regs.b1 << 8) | m_regs.c1;
+  dest = m_ports[ioaddress].value;
+  // afterwards hl and b are both decremented
+  m_regs.hl1 = m_regs.hl1 + 1;
+  m_regs.b1 = m_regs.b1 - 1;
+  // instruction is repeated iff b != 0
+  if(m_regs.b1 != 0){
+    m_regs.pc = m_regs.pc - 2;
+  }
+  // TODO :: Conditions
+}
+
+//-------------------------------------------------------------
+
+} // namespace Trpp::Cpu

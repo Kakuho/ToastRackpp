@@ -434,14 +434,19 @@ void NoPrefixTable::SetCallReturnGroup() noexcept{
   m_buffer[0xe8] = enums::RET_cc;
 
   // rst p
-  m_buffer[0xff] = enums::RST;
-  m_buffer[0xc7] = enums::RST;
-  m_buffer[0xcf] = enums::RST;
-  m_buffer[0xd7] = enums::RST;
-  m_buffer[0xdf] = enums::RST;
-  m_buffer[0xe7] = enums::RST;
-  m_buffer[0xef] = enums::RST;
+  m_buffer[0xff] = enums::RST_p;
+  m_buffer[0xc7] = enums::RST_p;
+  m_buffer[0xcf] = enums::RST_p;
+  m_buffer[0xd7] = enums::RST_p;
+  m_buffer[0xdf] = enums::RST_p;
+  m_buffer[0xe7] = enums::RST_p;
+  m_buffer[0xef] = enums::RST_p;
 }
+
+void NoPrefixTable::SetIOGroup() noexcept{
+
+}
+
 
 //-------------------------------------------------------------
 // Operator Overloads

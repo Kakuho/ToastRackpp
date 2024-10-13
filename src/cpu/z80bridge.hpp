@@ -14,14 +14,22 @@
 //       of needing to plug in and out via source code modification?)
 
 #include <memory>
+#include <unordered_set>
 
 #include "cpu/tables/enums/enums.hpp"
 #include "cpu/tables/enums/cb_enums.hpp"
+#include "cpu/tables/enums/dd_enums.hpp"
 #include "cpu/tables/enums/ddcb_enums.hpp"
+#include "cpu/tables/enums/fd_enums.hpp"
+#include "cpu/tables/enums/fdcb_enums.hpp"
+
 #include "cpu/tables/instructions/noprefix_table.hpp"
 #include "cpu/tables/instructions/cb_table.hpp"
 #include "cpu/tables/instructions/dd_table.hpp"
 #include "cpu/tables/instructions/ddcb_table.hpp"
+#include "cpu/tables/instructions/fd_table.hpp"
+#include "cpu/tables/instructions/fdcb_table.hpp"
+
 #include "debugz80.hpp"
 #include "shared/zxmemory.hpp"
 
@@ -80,6 +88,11 @@ class Z80Bridge{
       return byte;
     }
 
+    constexpr std::uint8_t GetByte(std::uint16_t index) const{
+      std::uint8_t byte = (*(m_memory))[index];
+      return byte;
+    }
+
     std::uint16_t NextWordInc(){
       std::uint16_t word = m_cpu->ReadWord(PC());
       PC() = PC() + 2;
@@ -130,6 +143,8 @@ class Z80Bridge{
     std::unique_ptr<Instructions::CBTable> pCBTable;
     std::unique_ptr<Instructions::DDTable> pDDTable;
     std::unique_ptr<Instructions::DDCBTable> pDDCBTable;
+    std::unique_ptr<Instructions::FDTable> pFDTable;
+    std::unique_ptr<Instructions::FDCBTable> pFDCBTable;
 
     // cycle tables
 

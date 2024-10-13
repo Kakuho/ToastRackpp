@@ -23,6 +23,12 @@ Z80Bridge::Z80Bridge(ZxMemory* memory)
 //-------------------------------------------------------------
 
 void Z80Bridge::Step(){
+  // instruction stepping routine
+  // intermediateSet is used in 0xDD or 0xFD to check if they 
+  // need skipping
+  static std::unordered_set<std::uint8_t> intermediateSet = {
+    0xDD, 0xED, 0xFD
+  };
   // main driving code for the instruction stepped interpreter
   if(NMI()){
     IsHalted() = false; 
@@ -60,12 +66,17 @@ void Z80Bridge::Step(){
       if(secondByte == 0xCB){
         std::uint8_t opcode = PC() + 1;
         StepDDCB(opcode);
-        PC() = PC() + 2;
+        PC() = PC() + 1;
+        break;
       }
+      else if(intermediateSet.contains(secondByte)){
+        break;
+      }
+
       else{
         StepDD(secondByte);
+        break;
       }
-      break;
     }
     case 0xFD:
     {
@@ -75,11 +86,15 @@ void Z80Bridge::Step(){
         std::uint8_t opcode = PC() + 1;
         StepFDCB(opcode);
         PC() = PC() + 2;
+        break;
+      }
+      else if(intermediateSet.contains(secondByte)){
+        break;
       }
       else{
         StepFD(secondByte);
+        break;
       }
-      break;
     }
     default:
     {
@@ -237,16 +252,15 @@ void Z80Bridge::StepED(std::uint8_t opcode){
 // ------------------------------------------------------ //
 
 void Z80Bridge::StepDD(std::uint8_t opcode){
-
   // Assumption: On exit, PC points to the next opcode
   using enum DDenums;
   DDenums instruction = (*(pDDTable))[opcode];
   assert(instruction != undefined);
   switch(instruction){
 
-    ///////////////////////////////////
+    //-------------------------------------------------------------
     // 8-bit load group
-    ///////////////////////////////////
+    //-------------------------------------------------------------
 
     case DDenums::LD_r_ixd:
     {
@@ -272,9 +286,9 @@ void Z80Bridge::StepDD(std::uint8_t opcode){
       break;
     }
 
-    ///////////////////////////////////
+    //-------------------------------------------------------------
     // 16-bit load group
-    ///////////////////////////////////
+    //-------------------------------------------------------------
 
     case DDenums::LD_ix_nn:
     {
@@ -315,9 +329,9 @@ void Z80Bridge::StepDD(std::uint8_t opcode){
       break;
     }
 
-    ///////////////////////////////////
+    //-------------------------------------------------------------
     // exchange group
-    ///////////////////////////////////
+    //-------------------------------------------------------------
 
     case DDenums::EX_sp_ix:
     {
@@ -325,9 +339,9 @@ void Z80Bridge::StepDD(std::uint8_t opcode){
       break;
     }
 
-    ///////////////////////////////////
+    //-------------------------------------------------------------
     // 8-bit arithmetic group
-    ///////////////////////////////////
+    //-------------------------------------------------------------
 
     case DDenums::ADD_a_ixd:
     {
@@ -399,9 +413,9 @@ void Z80Bridge::StepDD(std::uint8_t opcode){
       break;
     }
 
-    ///////////////////////////////////
+    //-------------------------------------------------------------
     // 16-bit arithmetic group
-    ///////////////////////////////////
+    //-------------------------------------------------------------
 
     /*
     case DDenums::ADD_ix_pp:
@@ -424,9 +438,9 @@ void Z80Bridge::StepDD(std::uint8_t opcode){
       break;
     }
 
-    ///////////////////////////////////
+    //-------------------------------------------------------------
     // Jump Group
-    ///////////////////////////////////
+    //-------------------------------------------------------------
 
     case DDenums::JP_ix:
     {
@@ -442,37 +456,403 @@ void Z80Bridge::StepDD(std::uint8_t opcode){
   }
 }
 
+
 // DDCB PREFIX
 // ------------------------------------------------------ //
 
 void Z80Bridge::StepDDCB(std::uint8_t opcode){
-  // Assumption: On exit, PC points to the next opcode
+  // Assumption: 
+  //  On Enter, PC points to the parameter d
+  //  PC is not changed in the execution of this function
   using enum DDCBenums;
   DDCBenums instruction = (*(pDDCBTable))[opcode];
   assert(instruction != undefined);
   switch(instruction){
 
+    //-------------------------------------------------------------
     // Rotate Shift Group
+    //-------------------------------------------------------------
+    
+    case DDCBenums::RLC_ixd:
+    {
+      std::uint8_t d = GetByte(PC());
+      m_cpu->RLC_ixd(d);
+      break;
+    }
 
+    case DDCBenums::RL_ixd:
+    {
+      std::uint8_t d = GetByte(PC());
+      m_cpu->RL_ixd(d);
+      break;
+    }
+
+    case DDCBenums::RRC_ixd:
+    {
+      std::uint8_t d = GetByte(PC());
+      m_cpu->RRC_ixd(d);
+      break;
+    }
+
+    case DDCBenums::RR_ixd:
+    {
+      std::uint8_t d = GetByte(PC());
+      m_cpu->RR_ixd(d);
+      break;
+    }
+
+    case DDCBenums::SLA_ixd:
+    {
+      std::uint8_t d = GetByte(PC());
+      m_cpu->SLA_ixd(d);
+      break;
+    }
+
+    case DDCBenums::SRA_ixd:
+    {
+      std::uint8_t d = GetByte(PC());
+      m_cpu->SRA_ixd(d);
+      break;
+    }
+
+    case DDCBenums::SRL_ixd:
+    {
+      std::uint8_t d = GetByte(PC());
+      m_cpu->SRL_ixd(d);
+      break;
+    }
+
+    //-------------------------------------------------------------
+    // Bit set group
+    //-------------------------------------------------------------
+    
+    case DDCBenums::BIT_b_ixd:
+    {
+      std::uint8_t d = GetByte(PC());
+      std::uint8_t b = GetByte(PC() + 1) >> 3;
+      m_cpu->BIT_b_ixd(b, d);
+      break;
+    }
+
+    case DDCBenums::SET_b_ixd:
+    {
+      std::uint8_t d = GetByte(PC());
+      std::uint8_t b = GetByte(PC() + 1) >> 3;
+      m_cpu->SET_b_ixd(b, d);
+      break;
+    }
+
+    case DDCBenums::RES_b_ixd:
+    {
+      std::uint8_t d = GetByte(PC());
+      std::uint8_t b = GetByte(PC() + 1) >> 3;
+      m_cpu->RES_b_ixd(b, d);
+      break;
+    }
   }
 }
 
+
 // FD PREFIX
 // ------------------------------------------------------ //
-
 void Z80Bridge::StepFD(std::uint8_t opcode){
-  throw std::runtime_error{
-        std::format("Error::StepFD::Unimplemented")
-  };
+  // Assumption: On exit, PC points to the next opcode
+  using enum FDenums;
+  FDenums instruction = (*(pFDTable))[opcode];
+  assert(instruction != undefined);
+  switch(instruction){
+
+    //-------------------------------------------------------------
+    // 8-bit load group
+    //-------------------------------------------------------------
+
+    case FDenums::LD_r_iyd:
+    {
+      std::uint8_t r = NextByteInc() & MASK_Y;
+      std::uint8_t d = NextByteInc();
+      m_cpu->LD_r_iyd(r, d);
+      break;
+    }
+
+    case FDenums::LD_iyd_r:
+    {
+      std::uint8_t r = NextByteInc() & MASK_Y;
+      std::uint8_t d = NextByteInc();
+      m_cpu->LD_r_iyd(r, d);
+      break;
+    }
+
+    case FDenums::LD_iyd_n:
+    {
+      std::uint8_t d = NextByteInc();
+      std::uint8_t n = NextByteInc();
+      m_cpu->LD_iyd_n(d, n);
+      break;
+    }
+
+    //-------------------------------------------------------------
+    // 16-bit load group
+    //-------------------------------------------------------------
+
+    case FDenums::LD_iy_nn:
+    {
+      std::uint16_t nn = NextWordInc();
+      m_cpu->LD_iy_nn(nn);
+      break;
+    }
+
+    case FDenums::LD_iy_nn_indirect:
+    {
+      std::uint16_t nn = NextWordInc();
+      m_cpu->LD_iy_nn_indirect(nn);
+      break;
+    }
+
+    case FDenums::LD_nn_iy_indirect:
+    {
+      std::uint16_t nn = NextWordInc();
+      m_cpu->LD_nn_iy(nn);
+      break;
+    }
+
+    case FDenums::LD_sp_iy:
+    {
+      m_cpu->LD_sp_iy();
+      break;
+    }
+
+    case FDenums::PUSH_iy:
+    {
+      m_cpu->Push_iy();
+      break;
+    }
+
+    case FDenums::POP_iy:
+    {
+      m_cpu->Pop_iy();
+      break;
+    }
+
+    //-------------------------------------------------------------
+    // exchange group
+    //-------------------------------------------------------------
+
+    case FDenums::EX_sp_iy:
+    {
+      m_cpu->EX_sp_iy();
+      break;
+    }
+
+    //-------------------------------------------------------------
+    // 8-bit arithmetic group
+    //-------------------------------------------------------------
+
+    case FDenums::ADD_a_iyd:
+    {
+      std::uint8_t d = NextByteInc();
+      m_cpu->ADD_a_iyd(d);
+      break;
+    }
+
+    case FDenums::ADC_a_iyd:
+    {
+      std::uint8_t d = NextByteInc();
+      m_cpu->ADC_a_iyd(d);
+      break;
+    }
+
+    case FDenums::SUB_a_iyd:
+    {
+      std::uint8_t d = NextByteInc();
+      m_cpu->SUB_a_iyd(d);
+      break;
+    }
+
+    case FDenums::SBC_a_iyd:
+    {
+      std::uint8_t d = NextByteInc();
+      m_cpu->SBC_a_iyd(d);
+      break;
+    }
+
+    case FDenums::AND_a_iyd:
+    {
+      std::uint8_t d = NextByteInc();
+      m_cpu->AND_a_iyd(d);
+      break;
+    }
+
+    case FDenums::OR_a_iyd:
+    {
+      std::uint8_t d = NextByteInc();
+      m_cpu->OR_a_iyd(d);
+      break;
+    }
+
+    case FDenums::XOR_a_iyd:
+    {
+      std::uint8_t d = NextByteInc();
+      m_cpu->XOR_a_iyd(d);
+      break;
+    }
+
+    case FDenums::CP_a_iyd:
+    {
+      std::uint8_t d = NextByteInc();
+      m_cpu->CP_a_iyd(d);
+      break;
+    }
+
+    case FDenums::INC_iyd:
+    {
+      std::uint8_t d = NextByteInc();
+      m_cpu->INC_iyd(d);
+      break;
+    }
+
+    case FDenums::DEC_iyd:
+    {
+      std::uint8_t d = NextByteInc();
+      m_cpu->DEC_iyd(d);
+      break;
+    }
+
+    //-------------------------------------------------------------
+    // 16-bit arithmetic group
+    //-------------------------------------------------------------
+
+    /*
+    case FDenums::ADD_iy_pp:
+    {
+      std::uint8_t pp = NextByteInc() & MASK_P;
+      m_cpu->AFD16_iy_pp_ixd(pp);
+      break;
+    }
+    */
+
+    case FDenums::INC_iy:
+    {
+      m_cpu->INC16_iy();
+      break;
+    }
+
+    case FDenums::DEC_iy:
+    {
+      m_cpu->DEC16_iy();
+      break;
+    }
+
+    //-------------------------------------------------------------
+    // Jump Group
+    //-------------------------------------------------------------
+
+    case FDenums::JP_iy:
+    {
+      m_cpu->JP_iy();
+      break;
+    }
+
+    case FDenums::undefined: [[fallthrough]];
+    default:
+    {
+      throw std::runtime_error{"Undefined instruction enum"};
+    }
+  }
 }
 
 // FDCB PREFIX
 // ------------------------------------------------------ //
 
 void Z80Bridge::StepFDCB(std::uint8_t opcode){
-  throw std::runtime_error{
-        std::format("Error::StepFDCB::Unimplemented")
-  };
+  // Assumption: 
+  //  On Enter, PC points to the parameter d
+  //  PC is not changed in the execution of this function
+  using enum FDCBenums;
+  FDCBenums instruction = (*(pFDCBTable))[opcode];
+  assert(instruction != undefined);
+  switch(instruction){
+
+    //-------------------------------------------------------------
+    // Rotate Shift Group
+    //-------------------------------------------------------------
+    
+    case FDCBenums::RLC_iyd:
+    {
+      std::uint8_t d = GetByte(PC());
+      m_cpu->RLC_iyd(d);
+      break;
+    }
+
+    case FDCBenums::RL_iyd:
+    {
+      std::uint8_t d = GetByte(PC());
+      m_cpu->RL_iyd(d);
+      break;
+    }
+
+    case FDCBenums::RRC_iyd:
+    {
+      std::uint8_t d = GetByte(PC());
+      m_cpu->RRC_iyd(d);
+      break;
+    }
+
+    case FDCBenums::RR_iyd:
+    {
+      std::uint8_t d = GetByte(PC());
+      m_cpu->RR_iyd(d);
+      break;
+    }
+
+    case FDCBenums::SLA_iyd:
+    {
+      std::uint8_t d = GetByte(PC());
+      m_cpu->SLA_iyd(d);
+      break;
+    }
+
+    case FDCBenums::SRA_iyd:
+    {
+      std::uint8_t d = GetByte(PC());
+      m_cpu->SRA_iyd(d);
+      break;
+    }
+
+    case FDCBenums::SRL_iyd:
+    {
+      std::uint8_t d = GetByte(PC());
+      m_cpu->SRL_iyd(d);
+      break;
+    }
+
+    //-------------------------------------------------------------
+    // Bit set group
+    //-------------------------------------------------------------
+    
+    case FDCBenums::BIT_b_iyd:
+    {
+      std::uint8_t d = GetByte(PC());
+      std::uint8_t b = GetByte(PC() + 1) >> 3;
+      m_cpu->BIT_b_iyd(b, d);
+      break;
+    }
+
+    case FDCBenums::SET_b_iyd:
+    {
+      std::uint8_t d = GetByte(PC());
+      std::uint8_t b = GetByte(PC() + 1) >> 3;
+      m_cpu->SET_b_iyd(b, d);
+      break;
+    }
+
+    case FDCBenums::RES_b_iyd:
+    {
+      std::uint8_t d = GetByte(PC());
+      std::uint8_t b = GetByte(PC() + 1) >> 3;
+      m_cpu->RES_b_iyd(b, d);
+      break;
+    }
+  }
 }
 
 // ------------------------------------------------------ //

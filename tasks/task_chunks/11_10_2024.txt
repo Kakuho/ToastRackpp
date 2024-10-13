@@ -2,45 +2,51 @@ Date start: 11_10_2024
 
 Date finished:
 
-Task Completed: 19 / 37
+Task Completed: 30 / 39
 
 ---------------------------------------------------
 
 CPU Orchestration:
 
-* Create the Enums for DD                             DONE
+  Instruction Population
 
-* Create the Enums for DDCB                           DONE
+    * Create the Enums for DD                             DONE
 
-* Create the Enums for FD                             DONE
+    * Create the Enums for DDCB                           DONE
 
-* Create the Enums for FDCB                           DONE
+    * Create the Enums for FD                             DONE
 
-* Fill in the CB instruction table                    DONE
+    * Create the Enums for FDCB                           DONE
 
-* Fill in the ED instruction table                    DONE
+    * Fill in the Noprefix instruction table              
 
-* Fill in the DD instruction table                    DONE
+    * Fill in the CB instruction table                    DONE
 
-* Fill in the DDCB instruction table                  DONE
+    * Fill in the ED instruction table                    DONE
 
-* Fill in the FD instruction table                    DONE
+    * Fill in the DD instruction table                    DONE
 
-* Fill in the FDCB instruction table                  DONE
+    * Fill in the DDCB instruction table                  DONE
 
-* Implement Z80Bridge.StepNoPrefix()
+    * Fill in the FD instruction table                    DONE
 
-* Implement Z80Bridge.StepCB()
+    * Fill in the FDCB instruction table                  DONE
 
-* Implement Z80Bridge.StepED()
+  Instruction Stepping
 
-* Implement Z80Bridge.StepDD()                        ALMOST DONE - REQUIRES ADD16_ix_pp
+    * Implement Z80Bridge.StepNoPrefix()
 
-* Implement Z80Bridge.StepDDCB()
+    * Implement Z80Bridge.StepCB()
 
-* Implement Z80Bridge.StepFD()
+    * Implement Z80Bridge.StepED()
 
-* Implement Z80Bridge.StepFDCB()
+    * Implement Z80Bridge.StepDD()                        ALMOST DONE - REQUIRES ADD16_ix_pp
+
+    * Implement Z80Bridge.StepDDCB()                      DONE
+
+    * Implement Z80Bridge.StepFD()                        DONE
+
+    * Implement Z80Bridge.StepFDCB()                      DONE
 
 ---------------------------------------------------
 
@@ -87,16 +93,17 @@ Z80 Opcodes Logic Implementation:
 
   IO Group:
 
-    * Implement IO space
+    * Implement IO space              DONE
 
-    * IN A
+    * IN A                            DONE
 
-    * IN r
+    * IN r                            DONE
+      UNDEFINED OPCODE??
 
-    * INI
+    * INI                             DONE
 
-    * INIR
+    * INIR                            DONE
 
-    * IND
+    * IND                             DONE
 
-    * INDR
+    * INDR                            DONE

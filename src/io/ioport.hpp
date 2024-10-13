@@ -7,9 +7,9 @@
 
 namespace Trpp::IO{
 
-class IoPort{
-  public:
-    std::uint8_t value;
+// POD for IoPort
+struct IoPort{
+  std::uint8_t value;
 };
 
 } // namespace Trpp::IO

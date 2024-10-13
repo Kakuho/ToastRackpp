@@ -3,6 +3,12 @@ how they work.
 
 Research Topics:
 
+  * Make a list of opcodes which requires condition checking
+
+  * Make a list of opcodes for cycle timing
+
+  * Make a list of opcodes for correctness testing
+
   * Find out how timing is split between the composite tv and the cpu
 
   * Find out how the vram is used, and when it is displayed to the composite tv

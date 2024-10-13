@@ -15,7 +15,9 @@
 #include <cassert>
 
 #include "../utils.hpp"
+#include "io/ioport.hpp"
 #include "z80registers.hpp"
+#include "iospace.hpp"
 #include "shared/zxmemory.hpp"
 
 namespace Trpp::CPU{
@@ -49,6 +51,18 @@ class Z80{
     void PushByte(std::uint8_t byte);
     std::uint8_t StackPopByte();
 
+    //-------------------------------------------------------------
+    // IO Space related
+    //-------------------------------------------------------------
+
+    void SetIoPort(std::uint8_t address, IO::IoPort& src){
+      m_ports.SetPort(address, src);
+    }
+
+    void RemoveIoPort(std::uint8_t address, IO::IoPort& src){
+      m_ports.RemovePort(address);
+    }
+    
   protected:
     //-------------------------------------------------------------
     // Internal Data Representation
@@ -57,18 +71,20 @@ class Z80{
     // allow derived classes do whatever they want with these,
     // but do not allow outside access
     
+    // internal data
     Z80RegisterSet m_regs;
+    IoSpace m_ports;
     std::uint8_t m_lastRead;
-    ZxMemory* m_memory; 
-
     // interrupts
-
     bool m_iff1;
     bool m_iff2;
     bool m_nmi;
     bool m_int;
     InterruptMode m_imode;
     bool m_halted;
+
+    // external data
+    ZxMemory* m_memory; 
 
     //-------------------------------------------------------------
     // Instruction operand tables
@@ -426,8 +442,13 @@ class Z80{
     //---------------------------------------------------------------//
     // Input Output Group
     //---------------------------------------------------------------/
-    // requires implementing ports 
-    // how do we initialise ports ? idk
+  
+    void IN_a_n(std::uint8_t n);
+    void IN_r_c(std::uint8_t r);
+    void INI();
+    void INIR();
+    void IND();
+    void INDR();
 };
 
 } // namespace Trpp::Cpu

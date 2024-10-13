@@ -138,9 +138,10 @@ enum class enums{
   CALL_cc_nn,
   RET,
   RET_cc,
-  RST,     
+  RST_p,     
 
   // IO group
+  IN_a_n,
   OUT_n_a
 };
 

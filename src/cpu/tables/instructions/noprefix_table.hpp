@@ -39,8 +39,10 @@ class NoPrefixTable{
     //    populates the table with the required instructions
     //-------------------------------------------------------------
 
+    // the main enum population method
     void SetEntries() noexcept;
 
+    // the auxililarly enum population method
     void Set8BitLoadGroup() noexcept;
     void Set16BitLoadGroup() noexcept;
     void SetExchangeGroup() noexcept;
@@ -50,6 +52,8 @@ class NoPrefixTable{
     void SetRotateShiftGroup() noexcept;
     void SetJumpGroup() noexcept;
     void SetCallReturnGroup() noexcept;
+    void SetIOGroup() noexcept;
+
 
   public:
     //-------------------------------------------------------------
